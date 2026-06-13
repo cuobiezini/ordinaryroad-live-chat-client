@@ -145,16 +145,15 @@ public class LiveEntryHistoryController {
     }
 
     /**
-     * 清理过期数据
+     * 清理所有入场记录
      *
-     * @param days 保留天数
      * @return 操作结果
      */
-    @DeleteMapping("/clean-old-data")
-    public Map<String, Object> cleanOldData(@RequestParam(defaultValue = "30") int days) {
-        log.info("清理{}天前的入场记录", days);
+    @DeleteMapping("/clean-all")
+    public Map<String, Object> cleanAllData() {
+        log.info("清理所有入场记录");
 
-        long deletedCount = entryHistoryService.cleanOldData(days);
+        long deletedCount = entryHistoryService.cleanAllData();
 
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);

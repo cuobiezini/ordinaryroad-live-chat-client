@@ -198,40 +198,27 @@
         </div>
     </div>
 
-    <!-- 清理旧数据模态对话框 -->
+    <!-- 清理所有数据模态对话框 -->
     <div id="cleanDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px);" onclick="if(event.target === this) closeCleanModal()">
         <div style="background: white; border-radius: 16px; padding: 0; max-width: 480px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalSlideIn 0.3s ease-out; overflow: hidden;">
             <!-- 头部 -->
             <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 24px 30px; color: white;">
                 <h3 style="margin: 0; font-size: 20px; display: flex; align-items: center; gap: 10px;">
-                     清理旧数据
+                     清理所有数据
                 </h3>
-                <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.9;">删除指定天数前的历史入场记录</p>
+                <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.9;">删除所有历史入场记录</p>
             </div>
             
             <!-- 内容区 -->
             <div style="padding: 30px;">
                 <div style="background: #fff3cd; border-left: 4px solid #f5576c; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
                     <p style="margin: 0; font-size: 14px; color: #856404; line-height: 1.6;">
-                        ⚠️ <strong>警告：</strong>此操作将永久删除数据，无法恢复！请谨慎操作。
+                        ⚠️ <strong>警告：</strong>此操作将永久删除<strong>所有</strong>入场记录，无法恢复！请谨慎操作。
                     </p>
                 </div>
                 
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500; font-size: 14px;">
-                        保留最近多少天的数据？
-                    </label>
-                    <input type="number" id="cleanDaysInput" value="30" min="1" max="365" 
-                           style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: all 0.3s;"
-                           onfocus="this.style.borderColor='#f5576c'; this.style.boxShadow='0 0 0 3px rgba(245,87,108,0.1)'"
-                           onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
-                    <small style="color: #999; display: block; margin-top: 8px; font-size: 12px;">
-                         例如：输入30表示保留最近30天的数据，删除30天前的所有记录
-                    </small>
-                </div>
-                
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <p style="margin: 0 0 8px 0; font-size: 13px; color: #666; font-weight: 500;"> 当前数据统计：</p>
+                    <p style="margin: 0 0 8px 0; font-size: 13px; color: #666; font-weight: 500;">📊 当前数据统计：</p>
                     <p style="margin: 0; font-size: 14px; color: #333;">
                         总记录数：<strong id="modalTotalCount" style="color: #667eea;">加载中...</strong>
                     </p>
@@ -243,7 +230,7 @@
                 <button onclick="closeCleanModal()" class="btn btn-secondary" style="flex: 1; max-width: 120px;">
                     取消
                 </button>
-                <button onclick="confirmCleanOldData()" class="btn btn-danger" style="flex: 1; max-width: 120px;">
+                <button onclick="confirmCleanAllData()" class="btn btn-danger" style="flex: 1; max-width: 120px;">
                     确认清理
                 </button>
             </div>
@@ -303,7 +290,7 @@
     <script th:src="@{/js/admin.js}"></script>
     <script>
         let currentPage = 1;
-        let pageSize = 20;
+        let pageSize = 10;  // 每页显示10条
         let totalPages = 0;
         let selectedIds = [];
 
@@ -618,14 +605,6 @@
             // 更新当前总记录数
             const totalCount = document.getElementById('total-count').textContent;
             document.getElementById('modalTotalCount').textContent = totalCount + ' 条';
-            
-            // 重置输入框为默认值
-            document.getElementById('cleanDaysInput').value = '30';
-            
-            // 聚焦到输入框
-            setTimeout(() => {
-                document.getElementById('cleanDaysInput').focus();
-            }, 100);
         }
 
         // 关闭清理对话框
@@ -634,28 +613,12 @@
             modal.style.display = 'none';
         }
 
-        // 确认清理旧数据
-        async function confirmCleanOldData() {
-            const daysInput = document.getElementById('cleanDaysInput');
-            const days = parseInt(daysInput.value);
-            
-            // 验证输入
-            if (!days || days < 1) {
-                showToast('请输入有效的天数（至少1天）', 'error');
-                daysInput.focus();
-                return;
-            }
-            
-            if (days > 365) {
-                showToast('保留天数不能超过365天', 'error');
-                daysInput.focus();
-                return;
-            }
-            
+        // 确认清理所有数据
+        async function confirmCleanAllData() {
             try {
-                addLog(`开始清理${days}天前的数据...`, 'warning');
+                addLog('开始清理所有入场记录...', 'warning');
                 
-                const response = await fetch(`/api/live-entry/clean-old-data?days=${days}`, { method: 'DELETE' });
+                const response = await fetch('/api/live-entry/clean-all', { method: 'DELETE' });
                 const result = await response.json();
 
                 if (result.success) {

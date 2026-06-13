@@ -182,10 +182,10 @@
                 <!-- 分页 -->
                 <div id="entry-pagination-douyin" class="entry-pagination">
                     <span id="entry-page-info-douyin" class="entry-page-info">共 0 条记录，第 1 / 1 页</span>
-                    <button onclick="changeEntryPage(1)" id="entry-first-btn-douyin" disabled>首页</button>
-                    <button onclick="changeEntryPage(-1)" id="entry-prev-btn-douyin" disabled>上一页</button>
-                    <button onclick="changeEntryPage(1)" id="entry-next-btn-douyin" disabled>下一页</button>
-                    <button onclick="changeEntryPage(entryTotalPages)" id="entry-last-btn-douyin" disabled>末页</button>
+                    <button onclick="changeEntryPage('first')" id="entry-first-btn-douyin" disabled>首页</button>
+                    <button onclick="changeEntryPage('prev')" id="entry-prev-btn-douyin" disabled>上一页</button>
+                    <button onclick="changeEntryPage('next')" id="entry-next-btn-douyin" disabled>下一页</button>
+                    <button onclick="changeEntryPage('last')" id="entry-last-btn-douyin" disabled>末页</button>
                 </div>
             </div>
         </div>
@@ -601,7 +601,7 @@
 
         // 入场记录分页信息
         let entryCurrentPage = 1;
-        let entryPageSize = 20;
+        let entryPageSize = 10;  // 每页显示10条
         let entryTotalPages = 1;
         let entryTotalCount = 0;
         let entryPlatform = 'douyin';
@@ -750,20 +750,31 @@
         /**
          * 切换页码
          */
-        async function changeEntryPage(direction) {
-            let newPage;
-            if (typeof direction === 'number' && direction > 100) {
-                // 直接跳转到指定页码（末页）
-                newPage = direction;
-            } else if (direction === 1) {
-                // 首页或下一页
-                newPage = entryCurrentPage === 1 ? 1 : (entryCurrentPage + 1);
-            } else {
-                // 上一页
-                newPage = entryCurrentPage + direction;
+        async function changeEntryPage(action) {
+            let newPage = entryCurrentPage;
+            
+            // 根据操作类型计算新页码
+            switch(action) {
+                case 'first':
+                    newPage = 1;
+                    break;
+                case 'prev':
+                    newPage = entryCurrentPage - 1;
+                    break;
+                case 'next':
+                    newPage = entryCurrentPage + 1;
+                    break;
+                case 'last':
+                    newPage = entryTotalPages;
+                    break;
+                default:
+                    return;
             }
             
-            if (newPage < 1 || newPage > entryTotalPages) return;
+            // 验证页码范围
+            if (newPage < 1 || newPage > entryTotalPages) {
+                return;
+            }
             
             entryCurrentPage = newPage;
             

@@ -114,22 +114,24 @@ public class LiveEntryHistoryService {
     }
 
     /**
-     * 清理过期数据
+     * 清理所有入场记录
      *
-     * @param days 保留天数
      * @return 删除的记录数
      */
     @Transactional
-    public long cleanOldData(int days) {
-        if (days < 1) {
-            throw new IllegalArgumentException("保留天数必须大于0");
+    public long cleanAllData() {
+        log.info("开始清理所有入场记录");
+        
+        // 获取总记录数
+        long totalCount = entryHistoryRepository.count();
+        
+        if (totalCount == 0) {
+            log.info("没有需要清理的数据");
+            return 0;
         }
         
-        LocalDateTime beforeTime = LocalDateTime.now().minusDays(days);
-        log.info("开始清理{}天前的入场记录，时间点: {}", days, beforeTime);
-        
-        // 直接调用Repository的delete方法，该方法会返回删除的记录数
-        long deletedCount = entryHistoryRepository.deleteByCreatedAtBefore(beforeTime);
+        // 使用JPQL批量删除，避免乐观锁冲突
+        int deletedCount = entryHistoryRepository.deleteAllRecords();
         
         log.info("清理完成: 删除{}条记录", deletedCount);
         return deletedCount;

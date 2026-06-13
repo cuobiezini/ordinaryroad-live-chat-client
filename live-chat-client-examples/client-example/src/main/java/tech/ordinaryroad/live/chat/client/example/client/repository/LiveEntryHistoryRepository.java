@@ -3,6 +3,7 @@ package tech.ordinaryroad.live.chat.client.example.client.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -157,4 +158,13 @@ public interface LiveEntryHistoryRepository extends JpaRepository<LiveEntryHisto
      * @return 未使用的记录列表
      */
     List<LiveEntryHistory> findByDisplayIdAndIsUsedFalse(String displayId);
+
+    /**
+     * 批量删除所有记录（JPQL方式，避免乐观锁冲突）
+     *
+     * @return 删除的记录数
+     */
+    @Modifying
+    @Query("DELETE FROM LiveEntryHistory")
+    int deleteAllRecords();
 }
