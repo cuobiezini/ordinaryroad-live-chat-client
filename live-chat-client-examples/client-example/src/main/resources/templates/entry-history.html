@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>入场记录管理 - 直播弹幕客户端管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .checkbox-cell {
+            width: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 入场记录管理</h1>
+            <p>Live Entry History Management</p>
+        </div>
+
+        <!-- 导航栏 -->
+        <div class="nav-bar">
+            <div class="nav-links">
+                <a href="/" class="nav-link">📊 总览</a>
+                <a href="/entry-history" class="nav-link active">📥 入场记录</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span id="user-info" style="color: #666; font-size: 14px;"></span>
+                <a href="/logout" class="btn btn-danger" style="padding: 8px 20px; text-decoration: none; display: inline-block;">🚪 退出登录</a>
+            </div>
+        </div>
+
+        <!-- 筛选条件 -->
+        <div class="filter-section">
+            <h2>🔍 查询条件</h2>
+            <div class="filter-form">
+                <div class="form-group">
+                    <label>直播间ID</label>
+                    <input type="text" id="filter-roomId" placeholder="输入直播间ID">
+                </div>
+                <div class="form-group">
+                    <label>平台</label>
+                    <select id="filter-platform">
+                        <option value="">全部</option>
+                        <option value="douyin">抖音</option>
+                        <option value="kuaishou">快手</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>用户昵称</label>
+                    <input type="text" id="filter-username" placeholder="模糊搜索">
+                </div>
+                <div class="form-group">
+                    <label>开始时间</label>
+                    <input type="datetime-local" id="filter-startTime">
+                </div>
+                <div class="form-group">
+                    <label>结束时间</label>
+                    <input type="datetime-local" id="filter-endTime">
+                </div>
+                <div class="button-group" style="margin-top: 0;">
+                    <button class="btn btn-primary" onclick="searchEntries()">🔍 查询</button>
+                    <button class="btn btn-warning" onclick="resetFilters()">🔄 重置</button>
+                    <button class="btn btn-success" onclick="exportCsv()">📥 导出CSV</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="margin: 0;">📋 入场记录列表</h2>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px 16px; border-radius: 8px; font-size: 14px;">
+                        <span style="font-size: 12px; opacity: 0.9;">总记录数</span>
+                        <span id="total-count" style="font-size: 20px; font-weight: bold; margin-left: 8px;">0</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-info btn-sm" onclick="fetchDisplayId()">🔍 取数（抖音）</button>
+                        <button class="btn btn-success btn-sm" onclick="batchMarkAsUsed()">✓ 批量标记为已使用</button>
+                        <button class="btn btn-danger btn-sm" onclick="batchDelete()">🗑️ 批量删除</button>
+                        <button class="btn btn-warning btn-sm" onclick="showCleanDialog()">🧹 清理旧数据</button>
+                    </div>
+                </div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th class="checkbox-cell"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                        <th>ID</th>
+                        <th>平台</th>
+                        <th>直播间ID</th>
+                        <th>用户UID</th>
+                        <th>用户昵称</th>
+                        <th>抖音号</th>
+                        <th>是否已使用</th>
+                        <th>进入时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 40px;">
+                            加载中...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 分页 -->
+            <div class="pagination" id="pagination">
+                <!-- 分页控件将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <!-- 操作日志 -->
+        <div class="log-section">
+            <h2>📋 操作日志</h2>
+            <div class="log-container" id="log-container">
+                <div class="log-entry log-info">系统已就绪，等待操作...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 清理旧数据模态对话框 -->
+    <div id="cleanDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px);" onclick="if(event.target === this) closeCleanModal()">
+        <div style="background: white; border-radius: 16px; padding: 0; max-width: 480px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalSlideIn 0.3s ease-out; overflow: hidden;">
+            <!-- 头部 -->
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 24px 30px; color: white;">
+                <h3 style="margin: 0; font-size: 20px; display: flex; align-items: center; gap: 10px;">
+                     清理旧数据
+                </h3>
+                <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.9;">删除指定天数前的历史入场记录</p>
+            </div>
+            
+            <!-- 内容区 -->
+            <div style="padding: 30px;">
+                <div style="background: #fff3cd; border-left: 4px solid #f5576c; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                    <p style="margin: 0; font-size: 14px; color: #856404; line-height: 1.6;">
+                        ⚠️ <strong>警告：</strong>此操作将永久删除数据，无法恢复！请谨慎操作。
+                    </p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500; font-size: 14px;">
+                        保留最近多少天的数据？
+                    </label>
+                    <input type="number" id="cleanDaysInput" value="30" min="1" max="365" 
+                           style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: all 0.3s;"
+                           onfocus="this.style.borderColor='#f5576c'; this.style.boxShadow='0 0 0 3px rgba(245,87,108,0.1)'"
+                           onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                    <small style="color: #999; display: block; margin-top: 8px; font-size: 12px;">
+                         例如：输入30表示保留最近30天的数据，删除30天前的所有记录
+                    </small>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 0 0 8px 0; font-size: 13px; color: #666; font-weight: 500;"> 当前数据统计：</p>
+                    <p style="margin: 0; font-size: 14px; color: #333;">
+                        总记录数：<strong id="modalTotalCount" style="color: #667eea;">加载中...</strong>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- 底部按钮 -->
+            <div style="padding: 20px 30px; background: #f8f9fa; display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="closeCleanModal()" class="btn btn-secondary" style="flex: 1; max-width: 120px;">
+                    取消
+                </button>
+                <button onclick="confirmCleanOldData()" class="btn btn-danger" style="flex: 1; max-width: 120px;">
+                    确认清理
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用确认对话框 -->
+    <div id="confirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(4px);" onclick="if(event.target === this) closeConfirmModal()">
+        <div style="background: white; border-radius: 16px; padding: 0; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalSlideIn 0.3s ease-out; overflow: hidden;">
+            <!-- 头部 -->
+            <div id="confirmModalHeader" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px 25px; color: white;">
+                <h3 id="confirmModalTitle" style="margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+                    确认操作
+                </h3>
+            </div>
+            
+            <!-- 内容区 -->
+            <div style="padding: 25px 30px;">
+                <div id="confirmModalWarning" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 15px; margin-bottom: 20px; border-radius: 4px; display: none;">
+                    <p id="confirmModalWarningText" style="margin: 0; font-size: 14px; color: #856404; line-height: 1.5;">
+                    </p>
+                </div>
+                
+                <p id="confirmModalMessage" style="margin: 0; font-size: 15px; color: #333; line-height: 1.6;">
+                </p>
+                
+                <div id="confirmModalExtra" style="margin-top: 15px; display: none;">
+                </div>
+            </div>
+            
+            <!-- 底部按钮 -->
+            <div style="padding: 18px 25px; background: #f8f9fa; display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="closeConfirmModal()" class="btn btn-secondary" style="flex: 1; max-width: 100px;">
+                    取消
+                </button>
+                <button id="confirmModalBtn" class="btn btn-primary" style="flex: 1; max-width: 100px;">
+                    确定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 动画样式 -->
+    <style>
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+
+    <script th:src="@{/js/admin.js}"></script>
+    <script>
+        let currentPage = 1;
+        let pageSize = 20;
+        let totalPages = 0;
+        let selectedIds = [];
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadCurrentUser();
+            await loadStatistics();
+            await loadEntries();
+            addLog('入场记录管理页面加载完成', 'info');
+        });
+
+        // 加载当前用户信息
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/api/live-chat/user/current');
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('user-info').textContent = `👤 ${user.username}`;
+                }
+            } catch (error) {
+                console.error('加载用户信息失败:', error);
+            }
+        }
+
+        // 加载统计数据
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/live-entry/statistics');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const stats = result.data;
+                    document.getElementById('total-count').textContent = stats.totalEntries || 0;
+                }
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
+        }
+
+        // 加载入场记录
+        async function loadEntries() {
+            const roomId = document.getElementById('filter-roomId').value;
+            const platform = document.getElementById('filter-platform').value;
+            const username = document.getElementById('filter-username').value;
+            const startTime = document.getElementById('filter-startTime').value;
+            const endTime = document.getElementById('filter-endTime').value;
+
+            // 显示loading
+            showTableLoading();
+
+            try {
+                const params = new URLSearchParams({
+                    pageNum: currentPage,
+                    pageSize: pageSize
+                });
+                
+                if (roomId) params.append('roomId', roomId);
+                if (platform) params.append('platform', platform);
+                if (username) params.append('username', username);
+                if (startTime) params.append('startTime', startTime);
+                if (endTime) params.append('endTime', endTime);
+
+                const response = await fetch(`/api/live-entry/query?${params}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderTable(result.data);
+                    renderPagination(result.total, result.pageNum, result.pageSize, result.totalPages);
+                    totalPages = result.totalPages;
+                }
+            } catch (error) {
+                addLog('加载数据失败: ' + error.message, 'error');
+            } finally {
+                // 隐藏loading
+                hideTableLoading();
+            }
+        }
+
+        // 显示表格loading
+        function showTableLoading() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="10" style="text-align: center; padding: 40px;">
+                        <div class="loading"></div>
+                        <p style="margin-top: 15px; color: #999;">加载中...</p>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // 隐藏表格loading
+        function hideTableLoading() {
+            // loading会在renderTable中自动替换
+        }
+
+        // 渲染表格
+        function renderTable(data) {
+            const tbody = document.getElementById('table-body');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px;">暂无数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(entry => {
+                const isUsed = entry.isUsed || false;
+                const usedBadge = isUsed ? 
+                    '<span style="background: #52c41a; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✓ 已使用</span>' :
+                    '<span style="background: #faad14; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;"> 未使用</span>';
+                
+                return `
+                <tr>
+                    <td class="checkbox-cell"><input type="checkbox" class="row-checkbox" value="${entry.id}" onchange="updateSelectedIds()"></td>
+                    <td>${entry.id}</td>
+                    <td>${getPlatformName(entry.platform)}</td>
+                    <td>${entry.roomId}</td>
+                    <td>${entry.uid}</td>
+                    <td>${entry.username || '-'}</td>
+                    <td>${entry.displayId || '-'}</td>
+                    <td>${usedBadge}</td>
+                    <td>${formatDateTime(entry.createdAt)}</td>
+                    <td>
+                        ${!isUsed ? `<button class="btn btn-success btn-sm" onclick="markAsUsed(${entry.id})">标记为已使用</button>` : ''}
+                        <button class="btn btn-danger btn-sm" onclick="deleteEntry(${entry.id})">删除</button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        // 渲染分页
+        function renderPagination(total, pageNum, pageSize, totalPages) {
+            const pagination = document.getElementById('pagination');
+            
+            pagination.innerHTML = `
+                <span>共 ${total} 条记录，第 ${pageNum}/${totalPages} 页</span>
+                <button onclick="changePage(1)" ${pageNum === 1 ? 'disabled' : ''}>首页</button>
+                <button onclick="changePage(${pageNum - 1})" ${pageNum === 1 ? 'disabled' : ''}>上一页</button>
+                <button onclick="changePage(${pageNum + 1})" ${pageNum === totalPages ? 'disabled' : ''}>下一页</button>
+                <button onclick="changePage(${totalPages})" ${pageNum === totalPages ? 'disabled' : ''}>末页</button>
+            `;
+        }
+
+        // 切换页码
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadEntries();
+        }
+
+        // 搜索
+        function searchEntries() {
+            currentPage = 1;
+            loadEntries();
+        }
+
+        // 重置筛选条件
+        function resetFilters() {
+            document.getElementById('filter-roomId').value = '';
+            document.getElementById('filter-platform').value = '';
+            document.getElementById('filter-username').value = '';
+            document.getElementById('filter-startTime').value = '';
+            document.getElementById('filter-endTime').value = '';
+            currentPage = 1;
+            loadEntries();
+        }
+
+        // 删除单条记录
+        async function deleteEntry(id) {
+            showConfirm({
+                title: '删除记录',
+                message: '确定要删除这条记录吗？',
+                warning: '此操作将永久删除该记录，无法恢复！',
+                type: 'danger',
+                icon: '',
+                onConfirm: async () => {
+                    try {
+                        const response = await fetch(`/api/live-entry/${id}`, { method: 'DELETE' });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showToast('删除成功', 'success');
+                            addLog('删除入场记录: id=' + id, 'success');
+                            loadEntries();
+                            loadStatistics();
+                        } else {
+                            showToast('删除失败: ' + result.message, 'error');
+                        }
+                    } catch (error) {
+                        showToast('删除失败', 'error');
+                        addLog('删除失败: ' + error.message, 'error');
+                    }
+                }
+            });
+        }
+
+        // 全选/取消全选
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll').checked;
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAll);
+            updateSelectedIds();
+        }
+
+        // 更新选中的ID列表
+        function updateSelectedIds() {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        }
+
+        // 批量删除
+        async function batchDelete() {
+            if (selectedIds.length === 0) {
+                showToast('请先选择要删除的记录', 'error');
+                return;
+            }
+
+            showConfirm({
+                title: '批量删除',
+                message: `确定要删除选中的 ${selectedIds.length} 条记录吗？`,
+                warning: '此操作将永久删除所有选中的记录，无法恢复！',
+                type: 'danger',
+                icon: '',
+                onConfirm: async () => {
+                    try {
+                        const response = await fetch('/api/live-entry/batch-delete', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(selectedIds)
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showToast(result.message, 'success');
+                            addLog(result.message, 'success');
+                            loadEntries();
+                            loadStatistics();
+                            selectedIds = [];
+                            document.getElementById('selectAll').checked = false;
+                        } else {
+                            showToast('批量删除失败: ' + result.message, 'error');
+                        }
+                    } catch (error) {
+                        showToast('批量删除失败', 'error');
+                        addLog('批量删除失败: ' + error.message, 'error');
+                    }
+                }
+            });
+        }
+
+        // 导出CSV
+        function exportCsv() {
+            const roomId = document.getElementById('filter-roomId').value;
+            const platform = document.getElementById('filter-platform').value;
+            const username = document.getElementById('filter-username').value;
+            const startTime = document.getElementById('filter-startTime').value;
+            const endTime = document.getElementById('filter-endTime').value;
+
+            const params = new URLSearchParams();
+            if (roomId) params.append('roomId', roomId);
+            if (platform) params.append('platform', platform);
+            if (username) params.append('username', username);
+            if (startTime) params.append('startTime', startTime);
+            if (endTime) params.append('endTime', endTime);
+
+            window.location.href = `/api/live-entry/export/csv?${params}`;
+            addLog('导出CSV文件', 'info');
+        }
+
+        // 显示清理对话框
+        function showCleanDialog() {
+            const modal = document.getElementById('cleanDataModal');
+            modal.style.display = 'flex';
+            
+            // 更新当前总记录数
+            const totalCount = document.getElementById('total-count').textContent;
+            document.getElementById('modalTotalCount').textContent = totalCount + ' 条';
+            
+            // 重置输入框为默认值
+            document.getElementById('cleanDaysInput').value = '30';
+            
+            // 聚焦到输入框
+            setTimeout(() => {
+                document.getElementById('cleanDaysInput').focus();
+            }, 100);
+        }
+
+        // 关闭清理对话框
+        function closeCleanModal() {
+            const modal = document.getElementById('cleanDataModal');
+            modal.style.display = 'none';
+        }
+
+        // 确认清理旧数据
+        async function confirmCleanOldData() {
+            const daysInput = document.getElementById('cleanDaysInput');
+            const days = parseInt(daysInput.value);
+            
+            // 验证输入
+            if (!days || days < 1) {
+                showToast('请输入有效的天数（至少1天）', 'error');
+                daysInput.focus();
+                return;
+            }
+            
+            if (days > 365) {
+                showToast('保留天数不能超过365天', 'error');
+                daysInput.focus();
+                return;
+            }
+            
+            try {
+                addLog(`开始清理${days}天前的数据...`, 'warning');
+                
+                const response = await fetch(`/api/live-entry/clean-old-data?days=${days}`, { method: 'DELETE' });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    addLog(result.message, 'success');
+                    closeCleanModal();
+                    loadEntries();
+                    loadStatistics();
+                } else {
+                    showToast('清理失败: ' + result.message, 'error');
+                    addLog('清理失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showToast('清理失败: ' + error.message, 'error');
+                addLog('清理失败: ' + error.message, 'error');
+            }
+        }
+
+        // 按ESC键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCleanModal();
+                closeConfirmModal();
+            }
+        });
+
+        // ========== 通用确认对话框功能 ==========
+        
+        let confirmCallback = null;
+
+        /**
+         * 显示确认对话框
+         * @param {Object} options - 配置选项
+         * @param {string} options.title - 标题
+         * @param {string} options.message - 消息内容
+         * @param {string} options.warning - 警告信息（可选）
+         * @param {Function} options.onConfirm - 确认回调函数
+         * @param {string} options.confirmText - 确认按钮文本（默认"确定"）
+         * @param {string} options.cancelText - 取消按钮文本（默认"取消"）
+         * @param {string} options.type - 类型：danger/warning/info（默认info）
+         */
+        function showConfirm(options) {
+            const modal = document.getElementById('confirmModal');
+            const header = document.getElementById('confirmModalHeader');
+            const title = document.getElementById('confirmModalTitle');
+            const message = document.getElementById('confirmModalMessage');
+            const warning = document.getElementById('confirmModalWarning');
+            const warningText = document.getElementById('confirmModalWarningText');
+            const extra = document.getElementById('confirmModalExtra');
+            const btn = document.getElementById('confirmModalBtn');
+
+            // 设置标题
+            title.innerHTML = options.icon ? `${options.icon} ${options.title}` : options.title;
+
+            // 设置头部颜色
+            if (options.type === 'danger') {
+                header.style.background = 'linear-gradient(135deg, #eb3349 0%, #f45c43 100%)';
+                btn.className = 'btn btn-danger';
+            } else if (options.type === 'warning') {
+                header.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+                btn.className = 'btn btn-warning';
+            } else {
+                header.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                btn.className = 'btn btn-primary';
+            }
+
+            // 设置消息
+            message.textContent = options.message;
+
+            // 设置警告信息
+            if (options.warning) {
+                warning.style.display = 'block';
+                warningText.textContent = options.warning;
+            } else {
+                warning.style.display = 'none';
+            }
+
+            // 设置额外内容
+            if (options.extraHtml) {
+                extra.style.display = 'block';
+                extra.innerHTML = options.extraHtml;
+            } else {
+                extra.style.display = 'none';
+            }
+
+            // 设置按钮文本
+            btn.textContent = options.confirmText || '确定';
+
+            // 保存回调函数
+            confirmCallback = options.onConfirm;
+
+            // 绑定确认按钮事件
+            btn.onclick = function() {
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+                closeConfirmModal();
+            };
+
+            // 显示模态框
+            modal.style.display = 'flex';
+
+            // 自动聚焦到确认按钮
+            setTimeout(() => {
+                btn.focus();
+            }, 100);
+        }
+
+        // 关闭确认对话框
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            modal.style.display = 'none';
+            confirmCallback = null;
+        }
+
+        // 标记为已使用
+        async function markAsUsed(id) {
+            showConfirm({
+                title: '标记为已使用',
+                message: '确定要将此记录标记为已使用吗？',
+                type: 'warning',
+                icon: '',
+                onConfirm: async () => {
+                    try {
+                        const response = await fetch(`/api/live-entry/${id}/mark-used`, {
+                            method: 'POST'
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showToast('标记成功', 'success');
+                            addLog('标记入场记录为已使用: id=' + id, 'success');
+                            loadEntries();
+                        } else {
+                            showToast('标记失败: ' + result.message, 'error');
+                        }
+                    } catch (error) {
+                        showToast('标记失败', 'error');
+                        addLog('标记失败: ' + error.message, 'error');
+                    }
+                }
+            });
+        }
+
+        // 批量标记为已使用
+        async function batchMarkAsUsed() {
+            if (selectedIds.length === 0) {
+                showToast('请先选择要标记的记录', 'error');
+                return;
+            }
+
+            showConfirm({
+                title: '批量标记',
+                message: `确定要将选中的 ${selectedIds.length} 条记录标记为已使用吗？`,
+                type: 'warning',
+                icon: '',
+                onConfirm: async () => {
+                    try {
+                        const response = await fetch('/api/live-entry/batch-mark-used', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(selectedIds)
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showToast(result.message, 'success');
+                            addLog(result.message, 'success');
+                            loadEntries();
+                            selectedIds = [];
+                            document.getElementById('selectAll').checked = false;
+                        } else {
+                            showToast('批量标记失败: ' + result.message, 'error');
+                        }
+                    } catch (error) {
+                        showToast('批量标记失败', 'error');
+                        addLog('批量标记失败: ' + error.message, 'error');
+                    }
+                }
+            });
+        }
+
+        // 取数功能：获取一个未使用的抖音号并标记为已使用
+        async function fetchDisplayId() {
+            showConfirm({
+                title: '取数（抖音）',
+                message: '确定要获取一个未使用的抖音号吗？',
+                warning: '获取后该记录将被标记为已使用，不会再次被取出。',
+                type: 'info',
+                icon: '',
+                onConfirm: async () => {
+                    try {
+                        const response = await fetch('/api/live-entry/fetch-display-id?platform=douyin', {
+                            method: 'POST'
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            const displayId = result.displayId || '-';
+                            const uid = result.uid || '-';
+                            const username = result.username || '-';
+                            
+                            // 显示结果对话框
+                            showFetchResult(displayId, uid, username);
+                            
+                            showToast('成功获取抖音号', 'success');
+                            addLog(`取数成功: displayId=${displayId}, uid=${uid}`, 'success');
+                            loadEntries();
+                            loadStatistics();
+                        } else {
+                            showToast(result.message, 'error');
+                            addLog('取数失败: ' + result.message, 'error');
+                        }
+                    } catch (error) {
+                        showToast('取数失败', 'error');
+                        addLog('取数失败: ' + error.message, 'error');
+                    }
+                }
+            });
+        }
+
+        // 显示取数结果
+        function showFetchResult(displayId, uid, username) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); z-index: 9999;
+                display: flex; justify-content: center; align-items: center;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    <h3 style="margin-top: 0; color: #667eea;">✅ 取数成功</h3>
+                    <div style="margin: 20px 0; font-size: 14px; line-height: 1.8;">
+                        <p><strong>抖音号：</strong><span style="font-size: 18px; color: #667eea; font-weight: bold;">${displayId}</span></p>
+                        <p><strong>用户UID：</strong>${uid}</p>
+                        <p><strong>用户昵称：</strong>${username}</p>
+                        <p style="color: #999; font-size: 12px; margin-top: 15px;">⚠️ 该记录已被标记为已使用，不会再次被取出</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <button onclick="this.closest('div[style*=fixed]').remove()" class="btn btn-primary">关闭</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // 辅助函数
+        function getPlatformName(platform) {
+            const names = { 'douyin': '抖音', 'kuaishou': '快手' };
+            return names[platform] || platform;
+        }
+
+        function formatDateTime(dateTime) {
+            if (!dateTime) return '-';
+            return dateTime.replace('T', ' ').substring(0, 19);
+        }
+    </script>
+</body>
+</html>

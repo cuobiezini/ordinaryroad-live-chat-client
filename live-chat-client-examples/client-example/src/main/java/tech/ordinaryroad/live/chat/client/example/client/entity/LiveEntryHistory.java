@@ -57,6 +57,12 @@ public class LiveEntryHistory {
     private String displayId;
 
     /**
+     * 是否已被使用过: 0-未使用, 1-已使用
+     */
+    @Column(name = "is_used", nullable = false)
+    private Boolean isUsed = false;
+
+    /**
      * 进入时间
      */
     @CreationTimestamp

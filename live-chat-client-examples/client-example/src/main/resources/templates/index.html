@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直播弹幕客户端管理系统 - 总览</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 直播弹幕客户端管理系统</h1>
+            <p>统一管理多平台直播间配置与连接状态</p>
+        </div>
+
+        <!-- 导航栏 -->
+        <div class="nav-bar">
+            <div class="nav-links" id="nav-links">
+                <a href="/" class="nav-link active"> 总览</a>
+                <a href="/entry-history" class="nav-link"> 入场记录</a>
+                <!-- 平台导航链接将通过JavaScript动态生成 -->
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span id="user-info" style="color: #666; font-size: 14px;"></span>
+                <a href="/logout" class="btn btn-danger" style="padding: 8px 20px; text-decoration: none; display: inline-block;"> 退出登录</a>
+            </div>
+        </div>
+
+        <!-- 平台卡片概览 -->
+        <div class="dashboard" id="platforms-container">
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <div class="loading"></div>
+                <p style="margin-top: 15px;">加载中...</p>
+            </div>
+        </div>
+
+        <!-- 操作日志 -->
+        <div class="log-section">
+            <h2> 操作日志</h2>
+            <div class="log-container" id="log-container">
+                <div class="log-entry log-info">系统已就绪，等待操作...</div>
+            </div>
+        </div>
+
+        <!-- 平台管理区 -->
+        <div class="log-section" style="margin-top: 30px;">
+            <h2> 平台显示管理</h2>
+            <p style="color: #666; margin-bottom: 20px;">管理已启用平台的显示状态（隐藏的平台将不会在任何地方显示）</p>
+            <div id="platform-management" class="dashboard">
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    <div class="loading"></div>
+                    <p style="margin-top: 15px;">加载中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/admin.js}"></script>
+    <script>
+        let enabledPlatforms = [];
+
+        // 初始化页面
+        async function initPage() {
+            await loadCurrentUser();
+            await loadEnabledPlatforms();
+            await loadAllPlatforms();
+            await loadPlatformManagement();
+            addLog('页面加载完成', 'info');
+            
+            // 定时刷新状态
+            setInterval(updateAllStatuses, 10000);
+        }
+
+        // 加载当前用户信息
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/api/live-chat/user/current');
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('user-info').textContent = ` ${user.username}`;
+                }
+            } catch (error) {
+                console.error('加载用户信息失败:', error);
+            }
+        }
+
+        // 加载启用的平台列表
+        async function loadEnabledPlatforms() {
+            try {
+                const response = await fetch('/api/live-chat/display/enabled-platforms');
+                enabledPlatforms = await response.json();
+                
+                // 动态生成导航栏
+                generateNavLinks();
+                
+            } catch (error) {
+                addLog('加载启用平台失败: ' + error.message, 'error');
+            }
+        }
+
+        // 生成导航栏链接
+        function generateNavLinks() {
+            const navContainer = document.getElementById('nav-links');
+            // 保留总览和入场记录链接
+            navContainer.innerHTML = '<a href="/" class="nav-link active"> 总览</a>' +
+                                     '<a href="/entry-history" class="nav-link"> 入场记录</a>';
+            
+            enabledPlatforms.forEach(platform => {
+                const link = document.createElement('a');
+                link.href = `/${platform.platform}`;
+                link.className = 'nav-link';
+                link.textContent = `${platform.icon} ${platform.platformName}`;
+                navContainer.appendChild(link);
+            });
+        }
+
+        // 加载所有平台信息
+        async function loadAllPlatforms() {
+            try {
+                const response = await fetch('/api/live-chat/configs');
+                const configs = await response.json();
+                
+                const container = document.getElementById('platforms-container');
+                container.innerHTML = '';
+                
+                // 只显示启用的平台
+                for (const platformConfig of enabledPlatforms) {
+                    const platform = platformConfig.platform;
+                    const config = configs.find(c => c.platform === platform);
+                    const card = await createPlatformCard(platform, config, platformConfig);
+                    container.appendChild(card);
+                }
+                
+                if (enabledPlatforms.length === 0) {
+                    container.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">当前没有启用的平台</p>';
+                }
+                
+                // 更新所有状态
+                await updateAllStatuses();
+                
+            } catch (error) {
+                addLog('加载配置失败: ' + error.message, 'error');
+                const container = document.getElementById('platforms-container');
+                container.innerHTML = `<p style="color: #f5576c; text-align: center; padding: 40px;">加载失败: ${error.message}</p>`;
+            }
+        }
+
+        // 创建平台卡片
+        async function createPlatformCard(platform, config, displayConfig) {
+            const card = document.createElement('div');
+            card.className = 'platform-card';
+            card.onclick = () => window.location.href = `/${platform}`;
+            
+            // 获取状态
+            let isConnected = false;
+            try {
+                const statusResponse = await fetch(`/api/live-chat/status/${platform}`);
+                const statusData = await statusResponse.json();
+                isConnected = statusData.connected;
+            } catch (e) {
+                console.error(`获取${platform}状态失败:`, e);
+            }
+            
+            const roomId = config ? config.roomId : '未配置';
+            const autoReconnect = config ? (config.autoReconnect ? '是' : '否') : '-';
+            const icon = displayConfig ? displayConfig.icon : '';
+            const platformName = displayConfig ? displayConfig.platformName : platform;
+            
+            card.innerHTML = `
+                <div class="platform-header">
+                    <div class="platform-name">${icon} ${platformName}</div>
+                    <span class="status-badge ${isConnected ? 'status-connected' : 'status-disconnected'}" 
+                          id="status-${platform}">
+                        ${isConnected ? '已连接' : '未连接'}
+                    </span>
+                </div>
+                
+                <div class="platform-info">
+                    <div class="info-item">
+                        <span class="info-label">直播间ID:</span>
+                        <span class="info-value">${roomId}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">自动重连:</span>
+                        <span class="info-value">${autoReconnect}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Cookie:</span>
+                        <span class="info-value">${config && config.cookie ? '已配置' : '未配置'}</span>
+                    </div>
+                </div>
+                
+                <button class="btn-view" onclick="event.stopPropagation(); window.location.href='/${platform}'">
+                    查看详情 →
+                </button>
+            `;
+            
+            return card;
+        }
+
+        // 更新所有客户端状态
+        async function updateAllStatuses() {
+            for (const platformConfig of enabledPlatforms) {
+                await updateClientStatus(platformConfig.platform);
+            }
+        }
+
+        // 加载平台管理界面
+        async function loadPlatformManagement() {
+            try {
+                const response = await fetch('/api/live-chat/display/all-platforms');
+                const allPlatforms = await response.json();
+                
+                const container = document.getElementById('platform-management');
+                container.innerHTML = '';
+                
+                // 只显示启用的平台
+                const enabledPlatformsOnly = allPlatforms.filter(platform => platform.enabled);
+                
+                if (enabledPlatformsOnly.length === 0) {
+                    container.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">当前没有启用的平台</p>';
+                    return;
+                }
+                
+                enabledPlatformsOnly.forEach(platform => {
+                    const card = createPlatformManagementCard(platform);
+                    container.appendChild(card);
+                });
+                
+            } catch (error) {
+                addLog('加载平台管理失败: ' + error.message, 'error');
+                const container = document.getElementById('platform-management');
+                container.innerHTML = `<p style="color: #f5576c; text-align: center; padding: 40px;">加载失败: ${error.message}</p>`;
+            }
+        }
+
+        // 创建平台管理卡片
+        function createPlatformManagementCard(platform) {
+            const card = document.createElement('div');
+            card.className = 'platform-card';
+            card.style.cursor = 'default';
+            
+            card.innerHTML = `
+                <div class="platform-header">
+                    <div class="platform-name">${platform.icon} ${platform.platformName}</div>
+                    <span class="status-badge ${platform.enabled ? 'status-connected' : 'status-disconnected'}" 
+                          id="display-status-${platform.platform}">
+                        ${platform.enabled ? '已显示' : '已隐藏'}
+                    </span>
+                </div>
+                
+                <div class="platform-info">
+                    <div class="info-item">
+                        <span class="info-label">平台标识:</span>
+                        <span class="info-value">${platform.platform}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">显示顺序:</span>
+                        <span class="info-value">${platform.displayOrder}</span>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn ${platform.enabled ? 'btn-danger' : 'btn-success'}" 
+                            onclick="togglePlatform('${platform.platform}', ${!platform.enabled})" 
+                            id="btn-toggle-${platform.platform}">
+                        ${platform.enabled ? '⛔ 隐藏' : '✅ 显示'}
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // 切换平台显示状态
+        async function togglePlatform(platform, enable) {
+            try {
+                const url = enable ? 
+                    `/api/live-chat/display/enable/${platform}` :
+                    `/api/live-chat/display/disable/${platform}`;
+                
+                addLog(`${enable ? '启用' : '禁用'}平台显示: ${platform}`, 'info');
+                const response = await fetch(url, { method: 'POST' });
+                
+                if (response.ok) {
+                    showToast(`平台${enable ? '已启用' : '已禁用'}`, 'success');
+                    addLog(`平台${enable ? '已启用' : '已禁用'}: ${platform}`, 'success');
+                    
+                    // 重新加载页面数据
+                    await loadEnabledPlatforms();
+                    await loadAllPlatforms();
+                    await loadPlatformManagement();
+                } else {
+                    throw new Error('操作失败');
+                }
+            } catch (error) {
+                showToast('操作失败', 'error');
+                addLog(`操作失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>

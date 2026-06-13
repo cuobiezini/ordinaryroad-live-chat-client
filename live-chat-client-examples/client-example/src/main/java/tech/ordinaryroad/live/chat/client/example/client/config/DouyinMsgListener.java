@@ -80,7 +80,7 @@ public class DouyinMsgListener implements IDouyinMsgListener {
         danmuHistory.setBadgeName(msg.getBadgeName());
         danmuHistory.setBadgeLevel((int) msg.getBadgeLevel()); // 显式转换为int
         danmuHistory.setContent(content);
-        liveDanmuHistoryRepository.save(danmuHistory);
+        //  liveDanmuHistoryRepository.save(danmuHistory);
 
         // TODO 可以用大模型进行FAQ回复
 //         String answer = content + "  的回复";
@@ -127,7 +127,7 @@ public class DouyinMsgListener implements IDouyinMsgListener {
         giftHistory.setGiftName(giftName);
         giftHistory.setGiftCount(giftCount);
         giftHistory.setGiftPrice(giftPrice);
-        liveGiftHistoryRepository.save(giftHistory);
+        //   liveGiftHistoryRepository.save(giftHistory);
     }
 
     /**
@@ -183,7 +183,7 @@ public class DouyinMsgListener implements IDouyinMsgListener {
         if (StringUtils.isNotBlank(msg.getWatchedCount())) {
             statsHistory.setWatchedCount(Long.valueOf(msg.getWatchedCount()));
         }
-        liveRoomStatsHistoryRepository.save(statsHistory);
+        //   liveRoomStatsHistoryRepository.save(statsHistory);
     }
 
     /**

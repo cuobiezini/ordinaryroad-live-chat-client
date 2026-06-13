@@ -56,10 +56,12 @@ CREATE TABLE `live_entry_history` (
   `uid` VARCHAR(100) NOT NULL COMMENT '用户唯一标识UID',
   `username` VARCHAR(100) DEFAULT NULL COMMENT '用户昵称',
   `display_id` VARCHAR(100) DEFAULT NULL COMMENT '抖音号',
+  `is_used` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已被使用过: 0-未使用, 1-已使用',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '进入时间',
   PRIMARY KEY (`id`),
   KEY `idx_room_platform` (`room_id`, `platform`),
-  KEY `idx_uid` (`uid`)
+  KEY `idx_uid` (`uid`),
+  KEY `idx_is_used` (`is_used`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='直播间用户入场记录表';
 
 -- ----------------------------
