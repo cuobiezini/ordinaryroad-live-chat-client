@@ -120,10 +120,6 @@
                         <input type="text" id="entry-filter-roomId" placeholder="输入直播间ID" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-size: 13px; color: #666; display: block; margin-bottom: 8px;">用户昵称</label>
-                        <input type="text" id="entry-filter-username" placeholder="模糊搜索" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
-                    </div>
-                    <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size: 13px; color: #666; display: block; margin-bottom: 8px;">开始时间</label>
                         <input type="datetime-local" id="entry-filter-startTime" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
                     </div>
@@ -620,8 +616,18 @@
             try {
                 addLog(`正在查询${getPlatformName(platform)}入场记录...`, 'info');
                 
+                // 显示表格loading
+                const tbody = document.getElementById('entry-table-body');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
+                            <div class="loading"></div>
+                            <p style="margin-top: 15px;">加载中...</p>
+                        </td>
+                    </tr>
+                `;
+                
                 const roomId = document.getElementById('entry-filter-roomId').value.trim();
-                const username = document.getElementById('entry-filter-username').value.trim();
                 const startTime = document.getElementById('entry-filter-startTime').value;
                 const endTime = document.getElementById('entry-filter-endTime').value;
                 
@@ -633,7 +639,6 @@
                 };
                 
                 if (roomId) requestBody.roomId = roomId;
-                if (username) requestBody.username = username;
                 if (startTime) requestBody.startTime = startTime;
                 if (endTime) requestBody.endTime = endTime;
                 
@@ -762,9 +767,19 @@
             
             // 重新查询当前页
             const roomId = document.getElementById('entry-filter-roomId').value.trim();
-            const username = document.getElementById('entry-filter-username').value.trim();
             const startTime = document.getElementById('entry-filter-startTime').value;
             const endTime = document.getElementById('entry-filter-endTime').value;
+            
+            // 显示表格loading
+            const tbody = document.getElementById('entry-table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
+                        <div class="loading"></div>
+                        <p style="margin-top: 15px;">加载中...</p>
+                    </td>
+                </tr>
+            `;
             
             // 构造POST请求体
             const requestBody = {
@@ -774,7 +789,6 @@
             };
             
             if (roomId) requestBody.roomId = roomId;
-            if (username) requestBody.username = username;
             if (startTime) requestBody.startTime = startTime;
             if (endTime) requestBody.endTime = endTime;
             
@@ -800,7 +814,6 @@
          */
         function resetEntryFilters() {
             document.getElementById('entry-filter-roomId').value = '';
-            document.getElementById('entry-filter-username').value = '';
             document.getElementById('entry-filter-startTime').value = '';
             document.getElementById('entry-filter-endTime').value = '';
             
@@ -820,6 +833,17 @@
                 onConfirm: async () => {
                     try {
                         addLog(`正在删除记录 ${id}...`, 'info');
+                        
+                        // 显示表格loading
+                        const tbody = document.getElementById('entry-table-body');
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
+                                    <div class="loading"></div>
+                                    <p style="margin-top: 15px;">删除中...</p>
+                                </td>
+                            </tr>
+                        `;
                         
                         const response = await fetch(`/api/live-entry/${id}`, {
                             method: 'DELETE'
@@ -883,6 +907,17 @@
                     try {
                         addLog(`正在批量删除 ${selectedEntryIds.length} 条记录...`, 'info');
                         
+                        // 显示表格loading
+                        const tbody = document.getElementById('entry-table-body');
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
+                                    <div class="loading"></div>
+                                    <p style="margin-top: 15px;">批量删除中...</p>
+                                </td>
+                            </tr>
+                        `;
+                        
                         const response = await fetch('/api/live-entry/batch-delete', {
                             method: 'DELETE',
                             headers: { 'Content-Type': 'application/json' },
@@ -923,6 +958,17 @@
                 onConfirm: async () => {
                     try {
                         addLog(`正在标记记录 ${id} 为已使用...`, 'info');
+                        
+                        // 显示表格loading
+                        const tbody = document.getElementById('entry-table-body');
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
+                                    <div class="loading"></div>
+                                    <p style="margin-top: 15px;">标记中...</p>
+                                </td>
+                            </tr>
+                        `;
                         
                         const response = await fetch(`/api/live-entry/${id}/mark-used`, {
                             method: 'POST'
@@ -965,6 +1011,17 @@
                     try {
                         addLog(`正在批量标记 ${selectedEntryIds.length} 条记录为已使用...`, 'info');
                         
+                        // 显示表格loading
+                        const tbody = document.getElementById('entry-table-body');
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
+                                    <div class="loading"></div>
+                                    <p style="margin-top: 15px;">批量标记中...</p>
+                                </td>
+                            </tr>
+                        `;
+                        
                         const response = await fetch('/api/live-entry/batch-mark-used', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -1006,6 +1063,17 @@
                 onConfirm: async () => {
                     try {
                         addLog('正在获取未使用的抖音号...', 'info');
+                        
+                        // 显示表格loading
+                        const tbody = document.getElementById('entry-table-body');
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
+                                    <div class="loading"></div>
+                                    <p style="margin-top: 15px;">取数中...</p>
+                                </td>
+                            </tr>
+                        `;
                         
                         const response = await fetch('/api/live-entry/fetch-display-id?platform=douyin', {
                             method: 'POST'

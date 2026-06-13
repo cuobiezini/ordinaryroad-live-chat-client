@@ -22,11 +22,6 @@ public class EntryQueryRequest {
     private String platform;
     
     /**
-     * 用户昵称（模糊查询）
-     */
-    private String username;
-    
-    /**
      * 开始时间（ISO格式）
      */
     private String startTime;

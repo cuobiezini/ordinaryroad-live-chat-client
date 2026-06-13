@@ -91,10 +91,6 @@
                         <input type="text" id="entry-filter-roomId-douyu" placeholder="输入直播间ID" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                     <div>
-                        <label style="font-size: 0.9em; color: #666; display: block; margin-bottom: 5px;">用户昵称</label>
-                        <input type="text" id="entry-filter-username-douyu" placeholder="模糊搜索" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    <div>
                         <label style="font-size: 0.9em; color: #666; display: block; margin-bottom: 5px;">开始时间</label>
                         <input type="datetime-local" id="entry-filter-startTime-douyu" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
@@ -164,21 +160,37 @@
             pagination.currentPage = 1;
             
             try {
+                // 显示表格loading
+                const tbody = document.getElementById(`entry-table-body-${platform}`);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                            <div class="loading"></div>
+                            <p style="margin-top: 15px;">加载中...</p>
+                        </td>
+                    </tr>
+                `;
+                
                 const roomId = document.getElementById(`entry-filter-roomId-${platform}`).value.trim();
-                const username = document.getElementById(`entry-filter-username-${platform}`).value.trim();
                 const startTime = document.getElementById(`entry-filter-startTime-${platform}`).value;
                 const endTime = document.getElementById(`entry-filter-endTime-${platform}`).value;
                 
-                const params = new URLSearchParams();
-                params.append('platform', platform);
-                if (roomId) params.append('roomId', roomId);
-                if (username) params.append('username', username);
-                if (startTime) params.append('startTime', startTime);
-                if (endTime) params.append('endTime', endTime);
-                params.append('pageNum', pagination.currentPage);
-                params.append('pageSize', pagination.pageSize);
+                // 构造POST请求体
+                const requestBody = {
+                    platform: platform,
+                    pageNum: pagination.currentPage,
+                    pageSize: pagination.pageSize
+                };
                 
-                const response = await fetch(`/api/live-entry/query?${params.toString()}`);
+                if (roomId) requestBody.roomId = roomId;
+                if (startTime) requestBody.startTime = startTime;
+                if (endTime) requestBody.endTime = endTime;
+                
+                const response = await fetch('/api/live-entry/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
                 const result = await response.json();
                 
                 if (result.success) {
@@ -260,21 +272,37 @@
             }
             
             try {
+                // 显示表格loading
+                const tbody = document.getElementById(`entry-table-body-${platform}`);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                            <div class="loading"></div>
+                            <p style="margin-top: 15px;">加载中...</p>
+                        </td>
+                    </tr>
+                `;
+                
                 const roomId = document.getElementById(`entry-filter-roomId-${platform}`).value.trim();
-                const username = document.getElementById(`entry-filter-username-${platform}`).value.trim();
                 const startTime = document.getElementById(`entry-filter-startTime-${platform}`).value;
                 const endTime = document.getElementById(`entry-filter-endTime-${platform}`).value;
                 
-                const params = new URLSearchParams();
-                params.append('platform', platform);
-                if (roomId) params.append('roomId', roomId);
-                if (username) params.append('username', username);
-                if (startTime) params.append('startTime', startTime);
-                if (endTime) params.append('endTime', endTime);
-                params.append('pageNum', newPage);
-                params.append('pageSize', pagination.pageSize);
+                // 构造POST请求体
+                const requestBody = {
+                    platform: platform,
+                    pageNum: newPage,
+                    pageSize: pagination.pageSize
+                };
                 
-                const response = await fetch(`/api/live-entry/query?${params.toString()}`);
+                if (roomId) requestBody.roomId = roomId;
+                if (startTime) requestBody.startTime = startTime;
+                if (endTime) requestBody.endTime = endTime;
+                
+                const response = await fetch('/api/live-entry/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
                 const result = await response.json();
                 
                 if (result.success) {
@@ -292,7 +320,6 @@
          */
         function resetEntryFilters(platform) {
             document.getElementById(`entry-filter-roomId-${platform}`).value = '';
-            document.getElementById(`entry-filter-username-${platform}`).value = '';
             document.getElementById(`entry-filter-startTime-${platform}`).value = '';
             document.getElementById(`entry-filter-endTime-${platform}`).value = '';
             
@@ -308,6 +335,17 @@
             }
             
             try {
+                // 显示表格loading
+                const tbody = document.getElementById(`entry-table-body-${platform}`);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                            <div class="loading"></div>
+                            <p style="margin-top: 15px;">删除中...</p>
+                        </td>
+                    </tr>
+                `;
+                
                 const response = await fetch(`/api/live-entry/delete/${recordId}`, {
                     method: 'DELETE'
                 });

@@ -126,10 +126,6 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>用户昵称</label>
-                    <input type="text" id="filter-username" placeholder="模糊搜索">
-                </div>
-                <div class="form-group">
                     <label>开始时间</label>
                     <input type="datetime-local" id="filter-startTime">
                 </div>
@@ -351,7 +347,6 @@
         async function loadEntries() {
             const roomId = document.getElementById('filter-roomId').value;
             const platform = document.getElementById('filter-platform').value;
-            const username = document.getElementById('filter-username').value;
             const startTime = document.getElementById('filter-startTime').value;
             const endTime = document.getElementById('filter-endTime').value;
 
@@ -367,7 +362,6 @@
                 
                 if (roomId) requestBody.roomId = roomId;
                 if (platform) requestBody.platform = platform;
-                if (username) requestBody.username = username;
                 if (startTime) requestBody.startTime = startTime;
                 if (endTime) requestBody.endTime = endTime;
 
@@ -473,7 +467,6 @@
         function resetFilters() {
             document.getElementById('filter-roomId').value = '';
             document.getElementById('filter-platform').value = '';
-            document.getElementById('filter-username').value = '';
             document.getElementById('filter-startTime').value = '';
             document.getElementById('filter-endTime').value = '';
             currentPage = 1;
@@ -567,7 +560,6 @@
         async function exportCsv() {
             const roomId = document.getElementById('filter-roomId').value;
             const platform = document.getElementById('filter-platform').value;
-            const username = document.getElementById('filter-username').value;
             const startTime = document.getElementById('filter-startTime').value;
             const endTime = document.getElementById('filter-endTime').value;
 
@@ -575,7 +567,6 @@
             const requestBody = {};
             if (roomId) requestBody.roomId = roomId;
             if (platform) requestBody.platform = platform;
-            if (username) requestBody.username = username;
             if (startTime) requestBody.startTime = startTime;
             if (endTime) requestBody.endTime = endTime;
 

@@ -41,8 +41,8 @@ public class LiveEntryHistoryController {
      */
     @PostMapping("/query")
     public Map<String, Object> queryEntries(@RequestBody EntryQueryRequest request) {
-        log.info("查询入场记录: roomId={}, platform={}, username={}", 
-                request.getRoomId(), request.getPlatform(), request.getUsername());
+        log.info("查询入场记录: roomId={}, platform={}", 
+                request.getRoomId(), request.getPlatform());
 
         LocalDateTime start = request.getStartTime() != null ? LocalDateTime.parse(request.getStartTime()) : null;
         LocalDateTime end = request.getEndTime() != null ? LocalDateTime.parse(request.getEndTime()) : null;
@@ -50,7 +50,7 @@ public class LiveEntryHistoryController {
         Page<LiveEntryHistory> page = entryHistoryService.queryEntries(
                 request.getRoomId(), 
                 request.getPlatform(), 
-                request.getUsername(), 
+                null,  // username 已废弃，传 null
                 start, 
                 end, 
                 request.getPageNum() != null ? request.getPageNum() : 1,
@@ -195,8 +195,8 @@ public class LiveEntryHistoryController {
      */
     @PostMapping("/export/csv")
     public ResponseEntity<byte[]> exportCsv(@RequestBody EntryExportRequest request) {
-        log.info("导出CSV: roomId={}, platform={}, username={}", 
-                request.getRoomId(), request.getPlatform(), request.getUsername());
+        log.info("导出CSV: roomId={}, platform={}", 
+                request.getRoomId(), request.getPlatform());
 
         LocalDateTime start = request.getStartTime() != null ? LocalDateTime.parse(request.getStartTime()) : null;
         LocalDateTime end = request.getEndTime() != null ? LocalDateTime.parse(request.getEndTime()) : null;
@@ -204,7 +204,7 @@ public class LiveEntryHistoryController {
         String csvContent = entryHistoryService.exportToCsv(
                 request.getRoomId(), 
                 request.getPlatform(), 
-                request.getUsername(), 
+                null,  // username 已废弃，传 null
                 start, 
                 end
         );
