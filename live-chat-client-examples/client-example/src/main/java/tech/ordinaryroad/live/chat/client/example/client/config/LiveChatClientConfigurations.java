@@ -44,5 +44,5 @@ public class LiveChatClientConfigurations {
     private DouyuLiveChatClientConfig douyu;
     private KuaishouLiveChatClientConfig kuaishou;
     private DouyinLiveChatClientConfig douyin;
-
+    //
 }
