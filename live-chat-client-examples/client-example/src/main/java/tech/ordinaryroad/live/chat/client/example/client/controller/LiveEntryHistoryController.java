@@ -8,6 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.ordinaryroad.live.chat.client.example.client.entity.LiveEntryHistory;
+import tech.ordinaryroad.live.chat.client.example.client.model.EntryExportRequest;
+import tech.ordinaryroad.live.chat.client.example.client.model.EntryQueryRequest;
 import tech.ordinaryroad.live.chat.client.example.client.service.LiveEntryHistoryService;
 
 import java.nio.charset.StandardCharsets;
@@ -34,40 +36,33 @@ public class LiveEntryHistoryController {
     /**
      * 分页查询入场记录
      *
-     * @param roomId 直播间ID
-     * @param platform 平台标识
-     * @param username 用户昵称（模糊查询）
-     * @param startTime 开始时间（ISO格式）
-     * @param endTime 结束时间（ISO格式）
-     * @param pageNum 页码
-     * @param pageSize 每页大小
+     * @param request 查询请求参数
      * @return 分页结果
      */
-    @GetMapping("/query")
-    public Map<String, Object> queryEntries(
-            @RequestParam(required = false) String roomId,
-            @RequestParam(required = false) String platform,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime,
-            @RequestParam(defaultValue = "1") int pageNum,
-            @RequestParam(defaultValue = "20") int pageSize
-    ) {
-        log.info("查询入场记录: roomId={}, platform={}, username={}", roomId, platform, username);
+    @PostMapping("/query")
+    public Map<String, Object> queryEntries(@RequestBody EntryQueryRequest request) {
+        log.info("查询入场记录: roomId={}, platform={}, username={}", 
+                request.getRoomId(), request.getPlatform(), request.getUsername());
 
-        LocalDateTime start = startTime != null ? LocalDateTime.parse(startTime) : null;
-        LocalDateTime end = endTime != null ? LocalDateTime.parse(endTime) : null;
+        LocalDateTime start = request.getStartTime() != null ? LocalDateTime.parse(request.getStartTime()) : null;
+        LocalDateTime end = request.getEndTime() != null ? LocalDateTime.parse(request.getEndTime()) : null;
 
         Page<LiveEntryHistory> page = entryHistoryService.queryEntries(
-                roomId, platform, username, start, end, pageNum, pageSize
+                request.getRoomId(), 
+                request.getPlatform(), 
+                request.getUsername(), 
+                start, 
+                end, 
+                request.getPageNum() != null ? request.getPageNum() : 1,
+                request.getPageSize() != null ? request.getPageSize() : 20
         );
 
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
         result.put("data", page.getContent());
         result.put("total", page.getTotalElements());
-        result.put("pageNum", pageNum);
-        result.put("pageSize", pageSize);
+        result.put("pageNum", request.getPageNum() != null ? request.getPageNum() : 1);
+        result.put("pageSize", request.getPageSize() != null ? request.getPageSize() : 20);
         result.put("totalPages", page.getTotalPages());
 
         return result;
@@ -195,27 +190,24 @@ public class LiveEntryHistoryController {
     /**
      * 导出CSV文件
      *
-     * @param roomId 直播间ID
-     * @param platform 平台标识
-     * @param username 用户昵称
-     * @param startTime 开始时间
-     * @param endTime 结束时间
+     * @param request 导出请求参数
      * @return CSV文件
      */
-    @GetMapping("/export/csv")
-    public ResponseEntity<byte[]> exportCsv(
-            @RequestParam(required = false) String roomId,
-            @RequestParam(required = false) String platform,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime
-    ) {
-        log.info("导出CSV: roomId={}, platform={}, username={}", roomId, platform, username);
+    @PostMapping("/export/csv")
+    public ResponseEntity<byte[]> exportCsv(@RequestBody EntryExportRequest request) {
+        log.info("导出CSV: roomId={}, platform={}, username={}", 
+                request.getRoomId(), request.getPlatform(), request.getUsername());
 
-        LocalDateTime start = startTime != null ? LocalDateTime.parse(startTime) : null;
-        LocalDateTime end = endTime != null ? LocalDateTime.parse(endTime) : null;
+        LocalDateTime start = request.getStartTime() != null ? LocalDateTime.parse(request.getStartTime()) : null;
+        LocalDateTime end = request.getEndTime() != null ? LocalDateTime.parse(request.getEndTime()) : null;
 
-        String csvContent = entryHistoryService.exportToCsv(roomId, platform, username, start, end);
+        String csvContent = entryHistoryService.exportToCsv(
+                request.getRoomId(), 
+                request.getPlatform(), 
+                request.getUsername(), 
+                start, 
+                end
+        );
 
         // 生成文件名
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));

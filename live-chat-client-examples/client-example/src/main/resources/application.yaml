@@ -1,6 +1,13 @@
 spring:
   application:
     name: ordinaryroad-live-chat-client-example
+  # Thymeleaf模板引擎配置
+  thymeleaf:
+    cache: false  # 开发环境禁用缓存，修改模板后自动生效
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+    mode: HTML
   # MySQL数据库配置
   datasource:
     url: jdbc:mysql://localhost:3306/live?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true

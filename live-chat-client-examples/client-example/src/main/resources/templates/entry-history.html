@@ -359,18 +359,23 @@
             showTableLoading();
 
             try {
-                const params = new URLSearchParams({
+                // 构造POST请求体
+                const requestBody = {
                     pageNum: currentPage,
                     pageSize: pageSize
-                });
+                };
                 
-                if (roomId) params.append('roomId', roomId);
-                if (platform) params.append('platform', platform);
-                if (username) params.append('username', username);
-                if (startTime) params.append('startTime', startTime);
-                if (endTime) params.append('endTime', endTime);
+                if (roomId) requestBody.roomId = roomId;
+                if (platform) requestBody.platform = platform;
+                if (username) requestBody.username = username;
+                if (startTime) requestBody.startTime = startTime;
+                if (endTime) requestBody.endTime = endTime;
 
-                const response = await fetch(`/api/live-entry/query?${params}`);
+                const response = await fetch('/api/live-entry/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
                 const result = await response.json();
 
                 if (result.success) {
@@ -559,22 +564,59 @@
         }
 
         // 导出CSV
-        function exportCsv() {
+        async function exportCsv() {
             const roomId = document.getElementById('filter-roomId').value;
             const platform = document.getElementById('filter-platform').value;
             const username = document.getElementById('filter-username').value;
             const startTime = document.getElementById('filter-startTime').value;
             const endTime = document.getElementById('filter-endTime').value;
 
-            const params = new URLSearchParams();
-            if (roomId) params.append('roomId', roomId);
-            if (platform) params.append('platform', platform);
-            if (username) params.append('username', username);
-            if (startTime) params.append('startTime', startTime);
-            if (endTime) params.append('endTime', endTime);
+            // 构造POST请求体
+            const requestBody = {};
+            if (roomId) requestBody.roomId = roomId;
+            if (platform) requestBody.platform = platform;
+            if (username) requestBody.username = username;
+            if (startTime) requestBody.startTime = startTime;
+            if (endTime) requestBody.endTime = endTime;
 
-            window.location.href = `/api/live-entry/export/csv?${params}`;
-            addLog('导出CSV文件', 'info');
+            try {
+                // 使用fetch发送POST请求
+                const response = await fetch('/api/live-entry/export/csv', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error('导出失败');
+                }
+
+                // 获取文件名
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = 'live_entry.csv';
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/i);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1];
+                    }
+                }
+
+                // 下载文件
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                addLog('导出CSV文件成功', 'success');
+            } catch (error) {
+                showToast('导出失败: ' + error.message, 'error');
+                addLog('导出失败: ' + error.message, 'error');
+            }
         }
 
         // 显示清理对话框
