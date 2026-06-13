@@ -18,9 +18,7 @@ class EntryRecordManager {
     getPlatformName() {
         const names = {
             'douyin': '抖音',
-            'bilibili': 'B站',
-            'douyu': '斗鱼',
-            'kuaishou': '快手'
+            'douyu': '斗鱼'
         };
         return names[this.platform] || this.platform;
     }

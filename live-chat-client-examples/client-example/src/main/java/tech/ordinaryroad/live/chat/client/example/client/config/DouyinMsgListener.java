@@ -142,6 +142,15 @@ public class DouyinMsgListener implements IDouyinMsgListener {
 
         Object roomId = binaryFrameHandler.getRoomId();
         tech.ordinaryroad.live.chat.client.codec.douyin.protobuf.User user = msg.getMsg().getUser();
+        
+        // 性别判断：只保留男性数据 (gender = 1)
+        // gender: 0=未知, 1=男性, 2=女性
+        int gender = user.getGender();
+        if (gender != 1) {
+            log.debug("{} 过滤非男性用户：{} (性别: {})", roomId, user.getNickName(), gender);
+            return;
+        }
+
         String uid = String.valueOf(user.getId());
         String username = user.getNickName();
         String displayId = user.getDisplayId();

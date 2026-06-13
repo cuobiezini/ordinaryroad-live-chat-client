@@ -83,13 +83,6 @@ async function saveConfig(platform) {
         autoReconnect: autoReconnect
     };
     
-    if (platform === 'kuaishou') {
-        const roomInfoType = document.getElementById(`roomInfoType-${platform}`);
-        if (roomInfoType) {
-            data.roomInfoGetType = roomInfoType.value;
-        }
-    }
-    
     try {
         addLog(`正在保存${getPlatformName(platform)}配置...`, 'info');
         const response = await fetch(`/api/live-chat/config/updateConfig/${platform}`, {
@@ -187,9 +180,7 @@ async function updateClientStatus(platform) {
 // 获取平台中文名称
 function getPlatformName(platform) {
     const names = {
-        'bilibili': 'B站',
         'douyu': '斗鱼',
-        'kuaishou': '快手',
         'douyin': '抖音'
     };
     return names[platform] || platform;
@@ -209,14 +200,6 @@ async function loadPlatformConfig(platform) {
         if (roomIdInput && config.roomId) roomIdInput.value = config.roomId;
         if (cookieInput && config.cookie) cookieInput.value = config.cookie;
         if (autoReconnectInput) autoReconnectInput.checked = config.autoReconnect !== false;
-        
-        // 快手专用字段
-        if (platform === 'kuaishou') {
-            const roomInfoType = document.getElementById(`roomInfoType-${platform}`);
-            if (roomInfoType && config.roomInfoGetType) {
-                roomInfoType.value = config.roomInfoGetType;
-            }
-        }
         
         // 更新状态
         await updateClientStatus(platform);

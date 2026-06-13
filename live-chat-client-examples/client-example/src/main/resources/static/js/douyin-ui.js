@@ -50,13 +50,13 @@ const DouyinUI = {
      */
     async loadConfig() {
         try {
-            const response = await fetch('/api/live-chat/config/getConfig/douyin');
+            const response = await fetch('/api/live-chat/config/douyin');
             const result = await response.json();
             
-            if (result.success && result.data) {
-                document.getElementById('roomId-douyin').value = result.data.roomId || '';
-                document.getElementById('cookie-douyin').value = result.data.cookie || '';
-                document.getElementById('autoReconnect-douyin').checked = result.data.autoReconnect !== false;
+            if (result) {
+                document.getElementById('roomId-douyin').value = result.roomId || '';
+                document.getElementById('cookie-douyin').value = result.cookie || '';
+                document.getElementById('autoReconnect-douyin').checked = result.autoReconnect !== false;
             }
         } catch (error) {
             console.error('加载配置失败:', error);
@@ -854,4 +854,49 @@ function loadBatchStatus() {
 // 全局函数：断开所有房间（供HTML直接调用）
 function disconnectAllRooms() {
     DouyinUI.disconnectAllRooms();
+}
+
+// 全局函数：保存配置（供HTML直接调用）
+function saveConfig() {
+    DouyinUI.saveConfig();
+}
+
+// 全局函数：连接客户端（供HTML直接调用）
+function connectClient() {
+    DouyinUI.connect();
+}
+
+// 全局函数：断开客户端（供HTML直接调用）
+function disconnectClient() {
+    DouyinUI.disconnect();
+}
+
+// 全局函数：重连客户端（供HTML直接调用）
+function reconnectClient() {
+    DouyinUI.reconnect();
+}
+
+// 全局函数：取数（供HTML直接调用）
+function fetchDisplayId() {
+    DouyinUI.fetchDisplayId();
+}
+
+// 全局函数：批量标记为已使用（供HTML直接调用）
+function batchMarkAsUsed() {
+    DouyinUI.batchMarkAsUsed();
+}
+
+// 全局函数：批量删除（供HTML直接调用）
+function batchDeleteEntries() {
+    DouyinUI.batchDeleteEntries();
+}
+
+// 全局函数：切换页码（供HTML直接调用）
+function changeEntryPage(action) {
+    DouyinUI.changeEntryPage(action);
+}
+
+// 全局函数：全选/取消全选（供HTML直接调用）
+function toggleSelectAllEntries() {
+    DouyinUI.toggleSelectAllEntries();
 }
