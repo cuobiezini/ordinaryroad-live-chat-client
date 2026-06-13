@@ -225,3 +225,71 @@ async function loadPlatformConfig(platform) {
         addLog(`加载配置失败: ${error.message}`, 'error');
     }
 }
+
+// 通用确认对话框
+function showConfirm(options) {
+    const modal = document.getElementById('confirmModal');
+    if (!modal) return;
+    
+    // 设置标题
+    const titleEl = document.getElementById('confirmModalTitle');
+    if (titleEl) {
+        titleEl.textContent = options.title || '确认操作';
+    }
+    
+    // 设置消息
+    const messageEl = document.getElementById('confirmModalMessage');
+    if (messageEl) {
+        messageEl.textContent = options.message || '';
+    }
+    
+    // 设置警告
+    const warningEl = document.getElementById('confirmModalWarning');
+    const warningTextEl = document.getElementById('confirmModalWarningText');
+    if (warningEl && warningTextEl) {
+        if (options.warning) {
+            warningTextEl.textContent = options.warning;
+            warningEl.style.display = 'block';
+        } else {
+            warningEl.style.display = 'none';
+        }
+    }
+    
+    // 设置按钮类型
+    const btnEl = document.getElementById('confirmModalBtn');
+    if (btnEl) {
+        btnEl.className = `btn btn-${options.type || 'primary'}`;
+        btnEl.textContent = options.btnText || '确定';
+    }
+    
+    // 设置头部背景色
+    const headerEl = document.getElementById('confirmModalHeader');
+    if (headerEl) {
+        const colors = {
+            'danger': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            'warning': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+            'info': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            'success': 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)'
+        };
+        headerEl.style.background = colors[options.type] || colors.info;
+    }
+    
+    // 设置确认按钮点击事件
+    btnEl.onclick = async function() {
+        closeConfirmModal();
+        if (typeof options.onConfirm === 'function') {
+            await options.onConfirm();
+        }
+    };
+    
+    // 显示对话框
+    modal.style.display = 'flex';
+}
+
+// 关闭确认对话框
+function closeConfirmModal() {
+    const modal = document.getElementById('confirmModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}

@@ -189,7 +189,7 @@ public class LiveEntryHistoryService {
             LocalDateTime endTime
     ) {
         StringBuilder csv = new StringBuilder();
-        csv.append("ID,平台,直播间ID,用户UID,用户昵称,抖音号,是否已使用,进入时间\n");
+        csv.append("ID,平台,直播间ID,用户昵称,抖音号,是否已使用,进入时间\n");
         
         // 查询所有符合条件的数据（不分页）
         Pageable allPageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -206,7 +206,6 @@ public class LiveEntryHistoryService {
             csv.append(entry.getId()).append(",")
                .append(entry.getPlatform()).append(",")
                .append(entry.getRoomId()).append(",")
-               .append(entry.getUid()).append(",")
                .append(escapeCsv(entry.getUsername())).append(",")
                .append(escapeCsv(entry.getDisplayId())).append(",")
                .append(Boolean.TRUE.equals(entry.getIsUsed()) ? "是" : "否").append(",")
