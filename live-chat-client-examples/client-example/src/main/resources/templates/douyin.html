@@ -691,7 +691,8 @@
                     '<span style="background: #faad14; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">○ 未使用</span>';
                 
                 const enterTime = entry.createdAt ? formatDateTime(entry.createdAt) : '-';
-                const platformName = getPlatformName(platform);
+                // 使用后端返回的每条记录的platform字段
+                const platformName = getPlatformName(entry.platform);
                 
                 html += `
                     <tr style="border-bottom: 1px solid #e0e0e0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f5f5f5'" onmouseout="this.style.backgroundColor='white'">
@@ -1140,6 +1141,20 @@
                     modal.remove();
                 }
             });
+        }
+
+        /**
+         * 获取平台中文名称
+         */
+        function getPlatformName(platform) {
+            const names = { 
+                'douyin': '抖音', 
+                'kuaishou': '快手',
+                'bilibili': 'B站',
+                'douyu': '斗鱼',
+                'huya': '虎牙'
+            };
+            return names[platform] || platform;
         }
 
         /**
