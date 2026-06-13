@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>抖音配置 - 直播弹幕客户端管理系统</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/entry-table.css}">
+    <link rel="stylesheet" th:href="@{/css/entry-table.css}">
 </head>
 <body>
     <div class="container">
@@ -112,82 +114,78 @@
             <h2>📥 入场记录查询</h2>
                     
             <!-- 筛选条件 -->
-            <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 20px;">
-                <h3 style="margin-top: 0; color: #333;">🔍 查询条件</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-size: 13px; color: #666; display: block; margin-bottom: 8px;">直播间ID</label>
-                        <input type="text" id="entry-filter-roomId" placeholder="输入直播间ID" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+            <div class="entry-filter-section">
+                <h3>🔍 查询条件</h3>
+                <div class="entry-filter-grid">
+                    <div class="form-group">
+                        <label class="entry-label">直播间ID</label>
+                        <input type="text" id="entry-filter-roomId-douyin" placeholder="输入直播间ID" class="entry-input">
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-size: 13px; color: #666; display: block; margin-bottom: 8px;">开始时间</label>
-                        <input type="datetime-local" id="entry-filter-startTime" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                    <div class="form-group">
+                        <label class="entry-label">开始时间</label>
+                        <input type="datetime-local" id="entry-filter-startTime-douyin" class="entry-input">
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-size: 13px; color: #666; display: block; margin-bottom: 8px;">结束时间</label>
-                        <input type="datetime-local" id="entry-filter-endTime" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                    <div class="form-group">
+                        <label class="entry-label">结束时间</label>
+                        <input type="datetime-local" id="entry-filter-endTime-douyin" class="entry-input">
                     </div>
-                    <div class="button-group" style="margin-top: 0;">
-                        <button onclick="searchEntryRecords('douyin')" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px; width: 100%;">
-                            🔍 查询
-                        </button>
+                    <div class="button-group">
+                        <button onclick="searchEntryRecords()" class="btn btn-primary">🔍 查询</button>
                     </div>
-                    <div class="button-group" style="margin-top: 0;">
-                        <button onclick="resetEntryFilters()" class="btn btn-warning" style="padding: 10px 20px; font-size: 14px; width: 100%;">
-                            🔄 重置
-                        </button>
+                    <div class="button-group">
+                        <button onclick="resetEntryFilters()" class="btn btn-warning">🔄 重置</button>
                     </div>
                 </div>
             </div>
                     
             <!-- 数据表格 -->
-            <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow-x: auto;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="margin: 0; color: #333;">📋 入场记录列表</h3>
+            <div class="entry-table-container">
+                <div class="entry-table-header">
+                    <h3>📋 入场记录列表</h3>
                     <div style="display: flex; align-items: center; gap: 20px;">
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 20px; border-radius: 10px; font-size: 14px; box-shadow: 0 4px 10px rgba(102,126,234,0.3);">
-                            <span style="font-size: 12px; opacity: 0.9;">总记录数</span>
-                            <span id="entry-total-count" style="font-size: 22px; font-weight: bold; margin-left: 8px;">0</span>
+                        <div class="entry-stats-badge">
+                            <span class="label">总记录数</span>
+                            <span id="entry-total-count-douyin" class="count">0</span>
                         </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn btn-info btn-sm" onclick="fetchDisplayId()" style="padding: 8px 15px; font-size: 12px; background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(23,162,184,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">🔍 取数（抖音）</button>
-                            <button class="btn btn-success btn-sm" onclick="batchMarkAsUsed()" style="padding: 8px 15px; font-size: 12px; background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(40,167,69,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">✓ 批量标记为已使用</button>
-                            <button class="btn btn-danger btn-sm" onclick="batchDeleteEntries()" style="padding: 8px 15px; font-size: 12px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(220,53,69,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">️ 批量删除</button>
+                        <div class="entry-actions">
+                            <button class="btn-entry-fetch" onclick="fetchDisplayId()">🔍 取数（抖音）</button>
+                            <button class="btn-entry-batch-mark" onclick="batchMarkAsUsed()">✓ 批量标记为已使用</button>
+                            <button class="btn-entry-batch-delete" onclick="batchDeleteEntries()">️ 批量删除</button>
                         </div>
                     </div>
                 </div>
-                        
-                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                    <thead style="position: sticky; top: 0; z-index: 10;">
-                        <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                            <th style="padding: 12px; text-align: center; width: 40px;"><input type="checkbox" id="selectAllEntries" onchange="toggleSelectAllEntries()" style="cursor: pointer;"></th>
-                            <th style="padding: 12px; text-align: left;">ID</th>
-                            <th style="padding: 12px; text-align: left;">平台</th>
-                            <th style="padding: 12px; text-align: left;">直播间ID</th>
-                            <th style="padding: 12px; text-align: left;">用户UID</th>
-                            <th style="padding: 12px; text-align: left;">用户昵称</th>
-                            <th style="padding: 12px; text-align: left;">抖音号</th>
-                            <th style="padding: 12px; text-align: left;">是否已使用</th>
-                            <th style="padding: 12px; text-align: left;">进入时间</th>
-                            <th style="padding: 12px; text-align: center;">操作</th>
+                                    
+                <table class="entry-table">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-col"><input type="checkbox" id="selectAllEntries-douyin" onchange="toggleSelectAllEntries()"></th>
+                            <th>ID</th>
+                            <th>平台</th>
+                            <th>直播间ID</th>
+                            <th>用户UID</th>
+                            <th>用户昵称</th>
+                            <th>抖音号</th>
+                            <th>是否已使用</th>
+                            <th>进入时间</th>
+                            <th style="text-align: center;">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="entry-table-body" style="background: white;">
+                    <tbody id="entry-table-body-douyin">
                         <tr>
                             <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
-                                点击"查询"按钮加载入场记录
+                                点击“查询”按钮加载入场记录
                             </td>
                         </tr>
                     </tbody>
                 </table>
-                        
+                                    
                 <!-- 分页 -->
-                <div id="entry-pagination" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                    <span id="entry-page-info" style="font-size: 13px; color: #666;">共 0 条记录，第 1 / 1 页</span>
-                    <button onclick="changeEntryPage(1)" id="entry-first-btn" disabled style="padding: 8px 15px; border: 2px solid #667eea; background: white; color: #667eea; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.3s;" onmouseover="if(!this.disabled){this.style.background='#667eea'; this.style.color='white'}" onmouseout="if(!this.disabled){this.style.background='white'; this.style.color='#667eea'}">首页</button>
-                    <button onclick="changeEntryPage(-1)" id="entry-prev-btn" disabled style="padding: 8px 15px; border: 2px solid #667eea; background: white; color: #667eea; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.3s;" onmouseover="if(!this.disabled){this.style.background='#667eea'; this.style.color='white'}" onmouseout="if(!this.disabled){this.style.background='white'; this.style.color='#667eea'}">上一页</button>
-                    <button onclick="changeEntryPage(1)" id="entry-next-btn" disabled style="padding: 8px 15px; border: 2px solid #667eea; background: white; color: #667eea; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.3s;" onmouseover="if(!this.disabled){this.style.background='#667eea'; this.style.color='white'}" onmouseout="if(!this.disabled){this.style.background='white'; this.style.color='#667eea'}">下一页</button>
-                    <button onclick="changeEntryPage(entryTotalPages)" id="entry-last-btn" disabled style="padding: 8px 15px; border: 2px solid #667eea; background: white; color: #667eea; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.3s;" onmouseover="if(!this.disabled){this.style.background='#667eea'; this.style.color='white'}" onmouseout="if(!this.disabled){this.style.background='white'; this.style.color='#667eea'}">末页</button>
+                <div id="entry-pagination-douyin" class="entry-pagination">
+                    <span id="entry-page-info-douyin" class="entry-page-info">共 0 条记录，第 1 / 1 页</span>
+                    <button onclick="changeEntryPage(1)" id="entry-first-btn-douyin" disabled>首页</button>
+                    <button onclick="changeEntryPage(-1)" id="entry-prev-btn-douyin" disabled>上一页</button>
+                    <button onclick="changeEntryPage(1)" id="entry-next-btn-douyin" disabled>下一页</button>
+                    <button onclick="changeEntryPage(entryTotalPages)" id="entry-last-btn-douyin" disabled>末页</button>
                 </div>
             </div>
         </div>
@@ -252,7 +250,10 @@
     </style>
 
     <script th:src="@{/js/admin.js}"></script>
+    <script th:src="@{/js/entry-common.js}"></script>
     <script>
+        // 创建入场记录管理器实例
+        const entryManager = new EntryRecordManager('douyin');
         // 定时刷新定时器（用于页面可见性控制）
         let statusInterval, batchInterval;
 
