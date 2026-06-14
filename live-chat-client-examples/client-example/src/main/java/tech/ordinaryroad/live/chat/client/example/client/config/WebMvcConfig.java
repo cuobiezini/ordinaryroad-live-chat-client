@@ -8,6 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * Web MVC配置类
  * 配置静态资源处理和跨域设置
+ * UTF-8编码通过 application.yaml 中的 server.servlet.encoding 配置实现
  * 
  * @author OrdinaryRoad
  * @date 2026/06/13

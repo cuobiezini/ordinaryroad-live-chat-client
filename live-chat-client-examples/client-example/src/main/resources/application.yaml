@@ -30,12 +30,19 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
 
-# Tomcat服务器配置 - Gzip压缩
+# Tomcat服务器配置 - Gzip压缩和UTF-8编码
 server:
   compression:
     enabled: true  # 启用Gzip压缩
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,image/svg+xml  # 需要压缩的MIME类型
     min-response-size: 1024  # 超过1KB才压缩
+  servlet:
+    encoding:
+      enabled: true      # 启用字符编码配置
+      force: true        # 强制设置编码
+      charset: UTF-8     # 设置UTF-8编码
+      force-request: true  # 强制请求编码
+      force-response: true # 强制响应编码
 tech:
   ordinaryroad:
     live:

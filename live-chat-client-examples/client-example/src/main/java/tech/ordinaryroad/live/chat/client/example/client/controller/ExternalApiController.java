@@ -34,22 +34,18 @@ public class ExternalApiController {
      * 
      * <p>请求示例：</p>
      * <pre>
-     * POST /api/external/fetch-display-id?apiKey=your-api-key-here
-     * Body:
-     *   {
-     *     "platform": "douyin"
-     *   }
+     * GET /api/external/fetch-display-id?apiKey=your-api-key-here&platform=douyin
      * </pre>
      *
      * @param request HTTP 请求
      * @param apiKey API Key（从 URL 参数获取）
-     * @param body 请求体
+     * @param platform 平台标识（可选，默认为 douyin）
      * @return 返回一条未使用的入场记录
      */
-    @PostMapping("/fetch-display-id")
+    @GetMapping("/fetch-display-id")
     public Map<String, Object> fetchDisplayId(HttpServletRequest request, 
                                                @RequestParam String apiKey,
-                                               @RequestBody Map<String, String> body) {
+                                               @RequestParam(required = false) String platform) {
         // 1. 验证 API Key
         if (!apiKeyAuthService.validateApiKey(apiKey, request)) {
             log.warn("外部 API 调用认证失败: ip={}, apiKey={}", getClientIp(request), apiKey);
@@ -62,7 +58,6 @@ public class ExternalApiController {
         }
 
         // 2. 获取平台参数
-        String platform = body.get("platform");
         if (platform == null || platform.isEmpty()) {
             platform = "douyin"; // 默认抖音
         }
