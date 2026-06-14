@@ -54,6 +54,9 @@ public class SecurityConfig {
                 // 允许访问外部API（通过API Key认证，不需要登录）
                 .requestMatchers("/api/external/**").permitAll()
                 
+                // 允许访问客户端连接接口（不需要登录）
+                .requestMatchers("/client/connect").permitAll()
+                
                 // 其他所有请求需要认证
                 .anyRequest().authenticated()
             )

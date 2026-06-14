@@ -1,9 +1,9 @@
 /**
- * 抖音页面 UI 控制器
+ * 快手页面 UI 控制器
  * 处理所有页面交互逻辑
  */
 
-const DouyinUI = {
+const KuaishouUI = {
     // 入场记录状态
     entryState: {
         currentPage: 1,
@@ -18,10 +18,10 @@ const DouyinUI = {
      */
     async init() {
         // 检查平台是否启用
-        const enabled = await requirePlatformEnabled('douyin');
+        const enabled = await requirePlatformEnabled('kuaishou');
         if (!enabled) return;
         
-        addLog('抖音配置页面加载完成', 'info');
+        addLog('快手配置页面加载完成', 'info');
         await this.loadConfig();
         await this.loadBatchStatus();
         
@@ -50,13 +50,13 @@ const DouyinUI = {
      */
     async loadConfig() {
         try {
-            const response = await fetch('/api/live-chat/config/douyin');
+            const response = await fetch('/api/live-chat/config/kuaishou');
             const result = await response.json();
             
             if (result) {
-                document.getElementById('roomId-douyin').value = result.roomId || '';
-                document.getElementById('cookie-douyin').value = result.cookie || '';
-                document.getElementById('autoReconnect-douyin').checked = result.autoReconnect !== false;
+                document.getElementById('roomId-kuaishou').value = result.roomId || '';
+                document.getElementById('cookie-kuaishou').value = result.cookie || '';
+                document.getElementById('autoReconnect-kuaishou').checked = result.autoReconnect !== false;
             }
         } catch (error) {
             console.error('加载配置失败:', error);
@@ -68,10 +68,10 @@ const DouyinUI = {
      */
     async updateClientStatus() {
         try {
-            const status = await DouyinAPI.getStatus();
-            const badge = document.getElementById('status-douyin');
-            const connectBtn = document.getElementById('btn-connect-douyin');
-            const disconnectBtn = document.getElementById('btn-disconnect-douyin');
+            const status = await KuaishouAPI.getStatus();
+            const badge = document.getElementById('status-kuaishou');
+            const connectBtn = document.getElementById('btn-connect-kuaishou');
+            const disconnectBtn = document.getElementById('btn-disconnect-kuaishou');
             
             if (badge) {
                 badge.className = `status-badge ${status.connected ? 'status-connected' : 'status-disconnected'}`;
@@ -90,13 +90,13 @@ const DouyinUI = {
      */
     async saveConfig() {
         const config = {
-            roomId: document.getElementById('roomId-douyin').value,
-            cookie: document.getElementById('cookie-douyin').value,
-            autoReconnect: document.getElementById('autoReconnect-douyin').checked
+            roomId: document.getElementById('roomId-kuaishou').value,
+            cookie: document.getElementById('cookie-kuaishou').value,
+            autoReconnect: document.getElementById('autoReconnect-kuaishou').checked
         };
         
         try {
-            await DouyinAPI.saveConfig(config);
+            await KuaishouAPI.saveConfig(config);
             showToast('配置保存成功', 'success');
             addLog('配置保存成功', 'success');
         } catch (error) {
@@ -110,7 +110,7 @@ const DouyinUI = {
      */
     async connect() {
         try {
-            await DouyinAPI.connect();
+            await KuaishouAPI.connect();
             showToast('连接成功', 'success');
             addLog('连接成功', 'success');
             await this.updateClientStatus();
@@ -125,7 +125,7 @@ const DouyinUI = {
      */
     async disconnect() {
         try {
-            await DouyinAPI.disconnect();
+            await KuaishouAPI.disconnect();
             showToast('已断开', 'success');
             addLog('已断开', 'success');
             await this.updateClientStatus();
@@ -140,7 +140,7 @@ const DouyinUI = {
      */
     async reconnect() {
         try {
-            await DouyinAPI.reconnect();
+            await KuaishouAPI.reconnect();
             showToast('重连成功', 'success');
             addLog('重连成功', 'success');
             await this.updateClientStatus();
@@ -154,7 +154,7 @@ const DouyinUI = {
      * 批量连接房间
      */
     async batchConnectRooms() {
-        const textarea = document.getElementById('batch-roomIds-douyin');
+        const textarea = document.getElementById('batch-roomIds-kuaishou');
         const roomIdsText = textarea.value.trim();
         
         if (!roomIdsText) {
@@ -165,7 +165,7 @@ const DouyinUI = {
         // 解析房间ID
         const roomIds = roomIdsText.split('\n')
             .map(line => line.trim())
-            .filter(line => line && !isNaN(Number(line)));
+            .filter(line => line);
         
         if (roomIds.length === 0) {
             showToast('没有有效的房间ID', 'error');
@@ -190,7 +190,7 @@ const DouyinUI = {
         this.showBatchConnectLoading();
         
         try {
-            const result = await DouyinAPI.batchConnect(roomIds);
+            const result = await KuaishouAPI.batchConnect(roomIds);
             
             showToast(result.message, 'success');
             addLog(result.message, 'success');
@@ -226,7 +226,7 @@ const DouyinUI = {
         `;
         loadingDiv.innerHTML = `
             <div class="loading"></div>
-            <p style="margin-top: 15px; color: #667eea; font-weight: 500;">正在批量连接房间...</p>
+            <p style="margin-top: 15px; color: #ff9800; font-weight: 500;">正在批量连接房间...</p>
         `;
         
         card.style.position = 'relative';
@@ -248,7 +248,7 @@ const DouyinUI = {
      */
     async loadBatchStatus() {
         try {
-            const statusList = await DouyinAPI.getBatchStatus();
+            const statusList = await KuaishouAPI.getBatchStatus();
             this.renderBatchStatus(statusList);
         } catch (error) {
             showToast('加载状态失败: ' + error.message, 'error');
@@ -312,7 +312,7 @@ const DouyinUI = {
                             状态: ${statusText}
                         </div>
                     </div>
-                    <button onclick="DouyinUI.disconnectRoom(${roomId})" 
+                    <button onclick="KuaishouUI.disconnectRoom('${roomId}')" 
                             style="background: rgba(255,255,255,0.8); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; color: #dc3545; font-weight: 500;"
                             onmouseover="this.style.background='rgba(255,255,255,1)'"
                             onmouseout="this.style.background='rgba(255,255,255,0.8)'">
@@ -337,7 +337,7 @@ const DouyinUI = {
             icon: '',
             onConfirm: async () => {
                 try {
-                    await DouyinAPI.disconnectRoom(roomId);
+                    await KuaishouAPI.disconnectRoom(roomId);
                     showToast('断开成功', 'success');
                     addLog('断开成功', 'success');
                     await this.loadBatchStatus();
@@ -361,7 +361,7 @@ const DouyinUI = {
             icon: '',
             onConfirm: async () => {
                 try {
-                    await DouyinAPI.disconnectAllRooms();
+                    await KuaishouAPI.disconnectAllRooms();
                     showToast('已断开所有房间', 'success');
                     addLog('已断开所有房间', 'success');
                     this.renderBatchStatus([]);
@@ -383,7 +383,7 @@ const DouyinUI = {
         this.showEntryTableLoading();
         
         try {
-            const data = await DouyinAPI.queryEntries({
+            const data = await KuaishouAPI.queryEntries({
                 pageNum: this.entryState.currentPage,
                 pageSize: this.entryState.pageSize,
                 ...filters
@@ -405,9 +405,9 @@ const DouyinUI = {
      */
     getEntryFilters() {
         return {
-            roomId: document.getElementById('entry-filter-roomId-douyin').value,
-            startTime: document.getElementById('entry-filter-startTime-douyin').value,
-            endTime: document.getElementById('entry-filter-endTime-douyin').value
+            roomId: document.getElementById('entry-filter-roomId-kuaishou').value,
+            startTime: document.getElementById('entry-filter-startTime-kuaishou').value,
+            endTime: document.getElementById('entry-filter-endTime-kuaishou').value
         };
     },
     
@@ -415,7 +415,7 @@ const DouyinUI = {
      * 显示表格loading
      */
     showEntryTableLoading(message = '加载中...') {
-        const tbody = document.getElementById('entry-table-body-douyin');
+        const tbody = document.getElementById('entry-table-body-kuaishou');
         tbody.innerHTML = `
             <tr>
                 <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
@@ -430,8 +430,8 @@ const DouyinUI = {
      * 渲染入场记录表格
      */
     renderEntryTable(data) {
-        const tbody = document.getElementById('entry-table-body-douyin');
-        const totalCountElement = document.getElementById('entry-total-count-douyin');
+        const tbody = document.getElementById('entry-table-body-kuaishou');
+        const totalCountElement = document.getElementById('entry-total-count-kuaishou');
         
         if (!data || data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px; color: #999;">暂无入场记录</td></tr>';
@@ -451,7 +451,7 @@ const DouyinUI = {
             
             html += `
                 <tr style="border-bottom: 1px solid #e0e0e0;">
-                    <td style="padding: 12px; text-align: center;"><input type="checkbox" class="entry-row-checkbox" value="${entry.id}" onchange="DouyinUI.updateSelectedEntryIds()" ${isUsed ? 'disabled' : ''}></td>
+                    <td style="padding: 12px; text-align: center;"><input type="checkbox" class="entry-row-checkbox" value="${entry.id}" onchange="KuaishouUI.updateSelectedEntryIds()" ${isUsed ? 'disabled' : ''}></td>
                     <td style="padding: 12px;">${entry.id}</td>
                     <td style="padding: 12px;">${platformName}</td>
                     <td style="padding: 12px;">${entry.roomId || '-'}</td>
@@ -460,8 +460,8 @@ const DouyinUI = {
                     <td style="padding: 12px;">${usedBadge}</td>
                     <td style="padding: 12px;">${enterTime}</td>
                     <td style="padding: 12px; text-align: center;">
-                        ${!isUsed ? `<button onclick="DouyinUI.markEntryAsUsed(${entry.id})" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-right: 5px;">标记为已使用</button>` : ''}
-                        <button onclick="DouyinUI.deleteEntryRecord(${entry.id})" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px;">删除</button>
+                        ${!isUsed ? `<button onclick="KuaishouUI.markEntryAsUsed(${entry.id})" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-right: 5px;">标记为已使用</button>` : ''}
+                        <button onclick="KuaishouUI.deleteEntryRecord(${entry.id})" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px;">删除</button>
                     </td>
                 </tr>
             `;
@@ -469,7 +469,7 @@ const DouyinUI = {
         
         tbody.innerHTML = html;
         totalCountElement.textContent = `${this.entryState.totalCount}`;
-        document.getElementById('selectAllEntries-douyin').checked = false;
+        document.getElementById('selectAllEntries-kuaishou').checked = false;
         this.entryState.selectedIds = [];
     },
     
@@ -481,11 +481,11 @@ const DouyinUI = {
         this.entryState.currentPage = pageNum;
         this.entryState.totalPages = totalPages;
         
-        const pageInfo = document.getElementById('entry-page-info-douyin');
-        const firstBtn = document.getElementById('entry-first-btn-douyin');
-        const prevBtn = document.getElementById('entry-prev-btn-douyin');
-        const nextBtn = document.getElementById('entry-next-btn-douyin');
-        const lastBtn = document.getElementById('entry-last-btn-douyin');
+        const pageInfo = document.getElementById('entry-page-info-kuaishou');
+        const firstBtn = document.getElementById('entry-first-btn-kuaishou');
+        const prevBtn = document.getElementById('entry-prev-btn-kuaishou');
+        const nextBtn = document.getElementById('entry-next-btn-kuaishou');
+        const lastBtn = document.getElementById('entry-last-btn-kuaishou');
         
         pageInfo.textContent = `共 ${total} 条记录，第 ${pageNum} / ${totalPages} 页`;
         firstBtn.disabled = pageNum <= 1;
@@ -516,7 +516,7 @@ const DouyinUI = {
         const filters = this.getEntryFilters();
         
         try {
-            const data = await DouyinAPI.queryEntries({
+            const data = await KuaishouAPI.queryEntries({
                 pageNum: this.entryState.currentPage,
                 pageSize: this.entryState.pageSize,
                 ...filters
@@ -533,9 +533,9 @@ const DouyinUI = {
      * 重置筛选条件
      */
     resetEntryFilters() {
-        document.getElementById('entry-filter-roomId-douyin').value = '';
-        document.getElementById('entry-filter-startTime-douyin').value = '';
-        document.getElementById('entry-filter-endTime-douyin').value = '';
+        document.getElementById('entry-filter-roomId-kuaishou').value = '';
+        document.getElementById('entry-filter-startTime-kuaishou').value = '';
+        document.getElementById('entry-filter-endTime-kuaishou').value = '';
         showToast('筛选条件已重置', 'success');
     },
     
@@ -543,7 +543,7 @@ const DouyinUI = {
      * 全选/取消全选
      */
     toggleSelectAllEntries() {
-        const selectAll = document.getElementById('selectAllEntries-douyin').checked;
+        const selectAll = document.getElementById('selectAllEntries-kuaishou').checked;
         const checkboxes = document.querySelectorAll('.entry-row-checkbox:not(:disabled)');
         checkboxes.forEach(cb => cb.checked = selectAll);
         this.updateSelectedEntryIds();
@@ -570,7 +570,7 @@ const DouyinUI = {
             onConfirm: async () => {
                 try {
                     this.showEntryTableLoading('删除中...');
-                    await DouyinAPI.deleteEntry(id);
+                    await KuaishouAPI.deleteEntry(id);
                     showToast('删除成功', 'success');
                     addLog('删除成功', 'success');
                     this.searchEntries();
@@ -602,10 +602,10 @@ const DouyinUI = {
             onConfirm: async () => {
                 try {
                     this.showEntryTableLoading('批量删除中...');
-                    await DouyinAPI.batchDelete(this.entryState.selectedIds);
+                    await KuaishouAPI.batchDelete(this.entryState.selectedIds);
                     showToast('批量删除成功', 'success');
                     addLog('批量删除成功', 'success');
-                    document.getElementById('selectAllEntries-douyin').checked = false;
+                    document.getElementById('selectAllEntries-kuaishou').checked = false;
                     this.entryState.selectedIds = [];
                     this.searchEntries();
                 } catch (error) {
@@ -630,7 +630,7 @@ const DouyinUI = {
             onConfirm: async () => {
                 try {
                     this.showEntryTableLoading('标记中...');
-                    await DouyinAPI.markAsUsed(id);
+                    await KuaishouAPI.markAsUsed(id);
                     showToast('标记成功', 'success');
                     addLog('标记成功', 'success');
                     this.searchEntries();
@@ -661,10 +661,10 @@ const DouyinUI = {
             onConfirm: async () => {
                 try {
                     this.showEntryTableLoading('批量标记中...');
-                    await DouyinAPI.batchMarkAsUsed(this.entryState.selectedIds);
+                    await KuaishouAPI.batchMarkAsUsed(this.entryState.selectedIds);
                     showToast('批量标记成功', 'success');
                     addLog('批量标记成功', 'success');
-                    document.getElementById('selectAllEntries-douyin').checked = false;
+                    document.getElementById('selectAllEntries-kuaishou').checked = false;
                     this.entryState.selectedIds = [];
                     this.searchEntries();
                 } catch (error) {
@@ -682,22 +682,22 @@ const DouyinUI = {
      */
     async fetchDisplayId() {
         showConfirm({
-            title: '取数（抖音）',
-            message: '确定要获取一个未使用的抖音号吗？',
+            title: '取数（快手）',
+            message: '确定要获取一个未使用的快手号吗？',
             warning: '获取后该记录将被标记为已使用，不会再次被取出。',
             type: 'info',
             icon: '',
             onConfirm: async () => {
                 try {
                     this.showEntryTableLoading('取数中...');
-                    const result = await DouyinAPI.fetchDisplayId();
+                    const result = await KuaishouAPI.fetchDisplayId();
                     
                     const displayId = result.displayId || '-';
                     const uid = result.uid || '-';
                     const username = result.username || '-';
                     
                     this.showFetchResult(displayId, uid, username);
-                    showToast('成功获取抖音号', 'success');
+                    showToast('成功获取快手号', 'success');
                     addLog(`取数成功: displayId=${displayId}, uid=${uid}`, 'success');
                     this.searchEntries();
                 } catch (error) {
@@ -719,9 +719,9 @@ const DouyinUI = {
         
         modal.innerHTML = `
             <div style="background: white; padding: 30px; border-radius: 16px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalSlideIn 0.3s ease-out;">
-                <h3 style="margin-top: 0; color: #667eea; display: flex; align-items: center; gap: 10px;">✅ 取数成功</h3>
+                <h3 style="margin-top: 0; color: #ff9800; display: flex; align-items: center; gap: 10px;">✅ 取数成功</h3>
                 <div style="margin: 20px 0; font-size: 14px; line-height: 1.8;">
-                    <p><strong>抖音号：</strong><span style="font-size: 20px; color: #667eea; font-weight: bold; margin-left: 8px;">${displayId}</span></p>
+                    <p><strong>快手号：</strong><span style="font-size: 20px; color: #ff9800; font-weight: bold; margin-left: 8px;">${displayId}</span></p>
                     <p><strong>用户UID：</strong>${uid}</p>
                     <p><strong>用户昵称：</strong>${username}</p>
                     <p style="color: #999; font-size: 12px; margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 4px;">⚠️ 该记录已被标记为已使用，不会再次被取出</p>
@@ -751,7 +751,7 @@ const DouyinUI = {
             onConfirm: async () => {
                 try {
                     this.showEntryTableLoading('清理中...');
-                    const result = await DouyinAPI.cleanAllData();
+                    const result = await KuaishouAPI.cleanAllData();
                     showToast(result.message || '清理成功', 'success');
                     addLog(result.message || '清理成功', 'success');
                     this.searchEntries();
@@ -822,80 +822,80 @@ const DouyinUI = {
 
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', () => {
-    DouyinUI.init();
+    KuaishouUI.init();
 });
 
 // 全局函数：显示清理对话框（供HTML直接调用）
 function showCleanDialog() {
-    DouyinUI.showCleanDialog();
+    KuaishouUI.showCleanDialog();
 }
 
 // 全局函数：搜索入场记录（供HTML直接调用）
 function searchEntryRecords() {
-    DouyinUI.searchEntries();
+    KuaishouUI.searchEntries();
 }
 
 // 全局函数：重置筛选条件（供HTML直接调用）
 function resetEntryFilters() {
-    DouyinUI.resetEntryFilters();
+    KuaishouUI.resetEntryFilters();
 }
 
 // 全局函数：批量连接房间（供HTML直接调用）
 function batchConnectRooms() {
-    DouyinUI.batchConnectRooms();
+    KuaishouUI.batchConnectRooms();
 }
 
 // 全局函数：加载批量连接状态（供HTML直接调用）
 function loadBatchStatus() {
-    DouyinUI.loadBatchStatus();
+    KuaishouUI.loadBatchStatus();
 }
 
 // 全局函数：断开所有房间（供HTML直接调用）
 function disconnectAllRooms() {
-    DouyinUI.disconnectAllRooms();
+    KuaishouUI.disconnectAllRooms();
 }
 
 // 全局函数：保存配置（供HTML直接调用）
 function saveConfig() {
-    DouyinUI.saveConfig();
+    KuaishouUI.saveConfig();
 }
 
 // 全局函数：连接客户端（供HTML直接调用）
 function connectClient() {
-    DouyinUI.connect();
+    KuaishouUI.connect();
 }
 
 // 全局函数：断开客户端（供HTML直接调用）
 function disconnectClient() {
-    DouyinUI.disconnect();
+    KuaishouUI.disconnect();
 }
 
 // 全局函数：重连客户端（供HTML直接调用）
 function reconnectClient() {
-    DouyinUI.reconnect();
+    KuaishouUI.reconnect();
 }
 
 // 全局函数：取数（供HTML直接调用）
 function fetchDisplayId() {
-    DouyinUI.fetchDisplayId();
+    KuaishouUI.fetchDisplayId();
 }
 
 // 全局函数：批量标记为已使用（供HTML直接调用）
 function batchMarkAsUsed() {
-    DouyinUI.batchMarkAsUsed();
+    KuaishouUI.batchMarkAsUsed();
 }
 
 // 全局函数：批量删除（供HTML直接调用）
 function batchDeleteEntries() {
-    DouyinUI.batchDeleteEntries();
+    KuaishouUI.batchDeleteEntries();
 }
 
 // 全局函数：切换页码（供HTML直接调用）
 function changeEntryPage(action) {
-    DouyinUI.changeEntryPage(action);
+    KuaishouUI.changeEntryPage(action);
 }
 
 // 全局函数：全选/取消全选（供HTML直接调用）
 function toggleSelectAllEntries() {
-    DouyinUI.toggleSelectAllEntries();
+    KuaishouUI.toggleSelectAllEntries();
 }

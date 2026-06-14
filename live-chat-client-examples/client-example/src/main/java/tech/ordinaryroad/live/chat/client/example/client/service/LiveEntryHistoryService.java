@@ -172,6 +172,11 @@ public class LiveEntryHistoryService {
     }
 
     /**
+     * UTF-8 BOM 字节序列，用于Excel正确识别UTF-8编码
+     */
+    private static final String UTF8_BOM = "\uFEFF";
+
+    /**
      * 导出CSV数据（简化版）
      *
      * @param roomId 直播间ID
@@ -179,7 +184,7 @@ public class LiveEntryHistoryService {
      * @param username 用户昵称
      * @param startTime 开始时间
      * @param endTime 结束时间
-     * @return CSV格式字符串
+     * @return CSV格式字符串（带UTF-8 BOM）
      */
     public String exportToCsv(
             String roomId,
@@ -189,6 +194,8 @@ public class LiveEntryHistoryService {
             LocalDateTime endTime
     ) {
         StringBuilder csv = new StringBuilder();
+        // 添加UTF-8 BOM，确保Excel能正确识别中文
+        csv.append(UTF8_BOM);
         csv.append("ID,平台,直播间ID,用户昵称,抖音号,是否已使用,进入时间\n");
         
         // 查询所有符合条件的数据（不分页）
@@ -203,13 +210,13 @@ public class LiveEntryHistoryService {
         );
         
         for (LiveEntryHistory entry : page.getContent()) {
-            csv.append(entry.getId()).append(",")
-               .append(entry.getPlatform()).append(",")
-               .append(entry.getRoomId()).append(",")
+            csv.append(escapeCsv(String.valueOf(entry.getId()))).append(",")
+               .append(escapeCsv(entry.getPlatform())).append(",")
+               .append(escapeCsv(entry.getRoomId())).append(",")
                .append(escapeCsv(entry.getUsername())).append(",")
                .append(escapeCsv(entry.getDisplayId())).append(",")
-               .append(Boolean.TRUE.equals(entry.getIsUsed()) ? "是" : "否").append(",")
-               .append(entry.getCreatedAt()).append("\n");
+               .append(escapeCsv(Boolean.TRUE.equals(entry.getIsUsed()) ? "是" : "否")).append(",")
+               .append(escapeCsv(String.valueOf(entry.getCreatedAt()))).append("\n");
         }
         
         return csv.toString();

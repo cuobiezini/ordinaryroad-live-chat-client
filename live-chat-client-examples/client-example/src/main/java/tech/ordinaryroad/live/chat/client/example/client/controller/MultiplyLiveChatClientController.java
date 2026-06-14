@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MultiplyLiveChatClientController {
 
     // 存储批量连接的房间ID和对应的客户端实例
-    private final Map<Long, BaseNettyClient<?, ?, ?, ?, ?, ?, ?>> batchConnectedClients = new ConcurrentHashMap<>();
+    private final Map<String, BaseNettyClient<?, ?, ?, ?, ?, ?, ?>> batchConnectedClients = new ConcurrentHashMap<>();
 
     @Autowired
     IBilibiliMsgListener bilibiliMsgListener;
@@ -64,19 +64,19 @@ public class MultiplyLiveChatClientController {
 
 
     @GetMapping("newClientAndStart/{roomId}")
-    public void newClientAndStart(@PathVariable Long roomId, @RequestParam String platform) {
+    public void newClientAndStart(@PathVariable String roomId, @RequestParam String platform) {
         BaseLiveChatClientConfig config;
         BaseNettyClient client;
         switch (platform) {
             case "bilibili" -> {
                 config = BilibiliLiveChatClientConfig.builder()
-                        .roomId(roomId)
+                        .roomId(Long.parseLong(roomId))
                         .build();
                 client = new BilibiliLiveChatClient((BilibiliLiveChatClientConfig) config, bilibiliMsgListener, bilibiliConnectionListener);
             }
             case "douyu" -> {
                 config = DouyuLiveChatClientConfig.builder()
-                        .roomId(roomId)
+                        .roomId(Long.parseLong(roomId))
                         .build();
                 client = new DouyuLiveChatClient((DouyuLiveChatClientConfig) config, douyuMsgListener, douyuConnectionListener);
             }
@@ -89,7 +89,7 @@ public class MultiplyLiveChatClientController {
             }
             case "douyin" -> {
                 config = DouyinLiveChatClientConfig.builder()
-                        .roomId(roomId)
+                        .roomId(Long.parseLong(roomId))
                         .build();
                 client = new DouyinLiveChatClient((DouyinLiveChatClientConfig) config, douyinMsgListener, douyinConnectionListener);
             }
@@ -111,7 +111,7 @@ public class MultiplyLiveChatClientController {
      */
     @PostMapping("batch-connect")
     public Map<String, Object> batchConnect(
-            @RequestBody List<Long> roomIds,
+            @RequestBody List<String> roomIds,
             @RequestParam String platform
     ) {
         Map<String, Object> result = new HashMap<>();
@@ -119,13 +119,13 @@ public class MultiplyLiveChatClientController {
         int failCount = 0;
         List<String> failedRooms = new ArrayList<>();
 
-        for (Long roomId : roomIds) {
+        for (String roomId : roomIds) {
             try {
                 newClientAndStart(roomId, platform);
                 successCount++;
             } catch (Exception e) {
                 failCount++;
-                failedRooms.add(roomId.toString());
+                failedRooms.add(roomId);
                 log.error("连接房间失败: roomId={}, error={}", roomId, e.getMessage());
             }
         }
@@ -152,8 +152,8 @@ public class MultiplyLiveChatClientController {
         List<Map<String, Object>> statusList = new ArrayList<>();
 
         // 遍历所有已连接的客户端
-        for (Map.Entry<Long, BaseNettyClient<?, ?, ?, ?, ?, ?, ?>> entry : batchConnectedClients.entrySet()) {
-            Long roomId = entry.getKey();
+        for (Map.Entry<String, BaseNettyClient<?, ?, ?, ?, ?, ?, ?>> entry : batchConnectedClients.entrySet()) {
+            String roomId = entry.getKey();
             BaseNettyClient<?, ?, ?, ?, ?, ?, ?> client = entry.getValue();
 
             if (client != null) {
@@ -203,7 +203,7 @@ public class MultiplyLiveChatClientController {
      */
     @PostMapping("batch-disconnect")
     public Map<String, Object> batchDisconnect(
-            @RequestParam Long roomId,
+            @RequestParam String roomId,
             @RequestParam String platform
     ) {
         Map<String, Object> result = new HashMap<>();
@@ -237,7 +237,7 @@ public class MultiplyLiveChatClientController {
         Map<String, Object> result = new HashMap<>();
         int count = 0;
 
-        for (Map.Entry<Long, BaseNettyClient<?, ?, ?, ?, ?, ?, ?>> entry : batchConnectedClients.entrySet()) {
+        for (Map.Entry<String, BaseNettyClient<?, ?, ?, ?, ?, ?, ?>> entry : batchConnectedClients.entrySet()) {
             BaseNettyClient<?, ?, ?, ?, ?, ?, ?> client = entry.getValue();
             if (client != null) {
                 try {

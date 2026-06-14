@@ -43,6 +43,8 @@ server:
       charset: UTF-8     # 设置UTF-8编码
       force-request: true  # 强制请求编码
       force-response: true # 强制响应编码
+    session:
+      timeout: -1  # 会话永不过期（-1表示永不过期）
 tech:
   ordinaryroad:
     live:
@@ -63,9 +65,9 @@ tech:
                   cookie: ${douyuCookie:}
                 kuaishou:
                   # TODO 直播间id
-                  roomId: q1735699139
+                  roomId: 3xnrmypk7e9f58u
                   # TODO 浏览器Cookie
-                  cookie: did=web_25b7e84f20be4f9a806d97b2b89a8535; didv=1753882864000; clientid=3; did=web_25b7e84f20be4f9a806d97b2b89a8535; client_key=65890b29; kpn=GAME_ZONE; userId=327228032; kuaishou.live.bfb1s=ac5f27b3b62895859c4c1622f49856a4; _tea_utm_cache_10000007=undefined; userId=327228032; kwpsecproductname=PCLive; kuaishou.live.web_st=ChRrdWFpc2hvdS5saXZlLndlYi5zdBKgAc6s7NO1wMFnlU8MW2lSkbTiv94p9cqUqtcK_XH8O75YL85eav3-4MnzMY5QP7yRuvmzgNzgUHAKO1USnXWYuTLDywPRxKnOU_XtKnlDSxTdnBIHuL-nb9HQrD1MVZy1hdu0vATlG-wV4DY9tmHvcLaNht-vEVt3771OpQ5Qhc0Diesw4NdtBV_cj3-GQJbuqi6d9RairtcY6nBUJyDrRmkaEk2hY_LIikBot7IUVtJ3ydB6KCIgAdB6ZHC9KO1sry0Chgmu0AMHcQ-JfMy2h-FfgsdWXccoBTAB; kuaishou.live.web_ph=9425d5a4be248b3b288f38a2b8604a070907; kwfv1=PAPF+eYfG008S+9P0U+/rlw/PIP0LI+0GUG/cE8/DEPBzjGA4D+nbDPfrh+0qAP/W7G/c78BzD8e+D8BHMGAzD+Ac9P9rhG0rAPeWA+nbSPf8fG/L7PerhP9GFP9L78fGA80GE+ePlP/DMG/S0G9Qf8/bj8eSS+eWlPeqlPBpS8fP=
+                  cookie: did=web_25b7e84f20be4f9a806d97b2b89a8535; didv=1777981717000; userId=5468222834; userId=5468222834; kwpsecproductname=PCLive; showFollowRedIcon=1; passToken=ChNwYXNzcG9ydC5wYXNzLXRva2VuEpABNbM1rDBnOYdDt4AG4uPgF2vdxb3aNV6fOda96GfxMnfdG52nyGtK6sd1ZqBEkePDGxlRjFkwe-KQZtMAFGGc66hbcTdto0x_dZJkz6_FdLw6pWhTdUze4G2XoM-n-9BQT7gBhjPmXv1RQg-dZ5-itIbWdf-yvIFWQG9Nw_obDdSWkr24GlyR0zA-QfTXsT6DGhKKuu7N4whAZLzzxMcR5srWdDAiINry1WnpXdbHAbs2ZDzPQCi3PD92Zad6qhahm9Ib8m4kKAUwAQ; kwfv1=PnGU+9+Y8008S+nH0U+0mjPf8fP08f+98f+nLlwnrIP9+Sw/ZFGfzY+eGlGf+f+e4SGfbYP0QfGnLFwBLU80mYG9rhGAYS+BrlwBGh+fHFG9zjGfLAP0rAPAcIGfPh+f8D+B+f+epS+/8fP0PlwePFG9cA+0LhP0LA80rE+9+S+BP=; kwssectoken=+8eh+xRh4beNkOgpqW+wTth1hjIYQCSMwkyRhivz0u+7tEwAekjozNW4q7p3rHHzPsqivZUawjl2vXzxJEXYKw==; kwscode=933f4035f7715a5bd619333317306be85211bb1c7aafb83e9a7c35189ce05e1d
                   roomInfoGetType: COOKIE
                 douyin:
                   # TODO 直播间id

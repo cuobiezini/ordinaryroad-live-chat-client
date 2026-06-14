@@ -75,7 +75,7 @@ public class KuaishouMsgListener implements IKuaishouMsgListener {
         danmuHistory.setBadgeName(msg.getBadgeName());
         danmuHistory.setBadgeLevel((int) msg.getBadgeLevel()); // 显式转换为int
         danmuHistory.setContent(content);
-        liveDanmuHistoryRepository.save(danmuHistory);
+     //   liveDanmuHistoryRepository.save(danmuHistory);
 
         // TODO 可以用大模型进行FAQ回复
         // String answer = content + "  的回复";
@@ -118,7 +118,7 @@ public class KuaishouMsgListener implements IKuaishouMsgListener {
         giftHistory.setGiftName(giftName);
         giftHistory.setGiftCount(giftCount);
         giftHistory.setGiftPrice(giftPrice);
-        liveGiftHistoryRepository.save(giftHistory);
+        //  liveGiftHistoryRepository.save(giftHistory);
     }
 
     /**
@@ -137,10 +137,10 @@ public class KuaishouMsgListener implements IKuaishouMsgListener {
         LiveRoomStatsHistory statsHistory = new LiveRoomStatsHistory();
         statsHistory.setPlatform("kuaishou");
         statsHistory.setRoomId(String.valueOf(roomId));
-        statsHistory.setLikedCount(Long.valueOf(msg.getLikedCount()));
-        statsHistory.setWatchingCount(Integer.valueOf(msg.getWatchingCount()));
-        statsHistory.setWatchedCount(Long.valueOf(msg.getWatchedCount()));
-        liveRoomStatsHistoryRepository.save(statsHistory);
+        statsHistory.setLikedCount(msg.getLikedCount() != null ? Long.parseLong(msg.getLikedCount()) : 0L);
+        statsHistory.setWatchingCount(msg.getWatchingCount() != null ? Integer.parseInt(msg.getWatchingCount()) : 0);
+        statsHistory.setWatchedCount(msg.getWatchedCount() != null ? Long.parseLong(msg.getWatchedCount()) : 0L);
+        //   liveRoomStatsHistoryRepository.save(statsHistory);
     }
 
     /**
