@@ -30,7 +30,7 @@ public class ConfigPersistenceService {
      * @return 保存后的配置
      */
     public PlatformConfig saveConfig(PlatformConfig config) {
-        log.info("保存平台配置: platform={}, roomId={}", config.getPlatform(), config.getRoomId());
+        log.info("保存平台配置: platform={}", config.getPlatform());
         return platformConfigRepository.save(config);
     }
 
@@ -77,21 +77,20 @@ public class ConfigPersistenceService {
      * 初始化默认配置（如果不存在）
      */
     public void initializeDefaultConfigs() {
-        String[] platforms = {"bilibili", "douyu", "kuaishou", "douyin"};
-        
+        String[] platforms = {"kuaishou", "douyin"};
+
         for (String platform : platforms) {
             if (!existsByPlatform(platform)) {
                 PlatformConfig defaultConfig = new PlatformConfig();
                 defaultConfig.setPlatform(platform);
-                defaultConfig.setRoomId("");
                 defaultConfig.setCookie("");
                 defaultConfig.setAutoReconnect(true);
                 defaultConfig.setEnabled(true);
-                
+
                 if ("kuaishou".equals(platform)) {
                     defaultConfig.setRoomInfoGetType("NOT_COOKIE");
                 }
-                
+
                 saveConfig(defaultConfig);
                 log.info("初始化默认配置: platform={}", platform);
             }

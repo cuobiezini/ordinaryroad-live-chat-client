@@ -22,27 +22,33 @@
  * SOFTWARE.
  */
 
-package tech.ordinaryroad.live.chat.client.example.client.config;
+package tech.ordinaryroad.live.chat.client.example.client.config.listener;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import tech.ordinaryroad.live.chat.client.bilibili.config.BilibiliLiveChatClientConfig;
-import tech.ordinaryroad.live.chat.client.douyin.config.DouyinLiveChatClientConfig;
-import tech.ordinaryroad.live.chat.client.douyu.config.DouyuLiveChatClientConfig;
-import tech.ordinaryroad.live.chat.client.kuaishou.config.KuaishouLiveChatClientConfig;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import tech.ordinaryroad.live.chat.client.douyu.listener.IDouyuConnectionListener;
+import tech.ordinaryroad.live.chat.client.douyu.netty.handler.DouyuConnectionHandler;
 
 /**
  * @author mjz
  * @date 2023/8/21
  */
-@Data
-@Configuration
-@ConfigurationProperties(prefix = "tech.ordinaryroad.live.chat.client.example.client.config")
-public class LiveChatClientConfigurations {
-    private BilibiliLiveChatClientConfig bilibili;
-    private DouyuLiveChatClientConfig douyu;
-    private KuaishouLiveChatClientConfig kuaishou;
-    private DouyinLiveChatClientConfig douyin;
-    //
+@Slf4j
+@Service
+public class DouyuConnectionListener implements IDouyuConnectionListener {
+
+    @Override
+    public void onConnected(DouyuConnectionHandler connectionHandler) {
+        log.info("douyu {} onConnected", connectionHandler.getRoomId());
+    }
+
+    @Override
+    public void onConnectFailed(DouyuConnectionHandler connectionHandler) {
+        log.info("douyu {} onConnectFailed", connectionHandler.getRoomId());
+    }
+
+    @Override
+    public void onDisconnected(DouyuConnectionHandler connectionHandler) {
+        log.info("douyu {} onDisconnected", connectionHandler.getRoomId());
+    }
 }

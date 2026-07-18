@@ -35,6 +35,7 @@ public class ExternalApiController {
      * <p>请求示例：</p>
      * <pre>
      * GET /api/external/fetch-display-id?apiKey=your-api-key-here&platform=douyin
+     * GET /api/external/fetch-display-id?apiKey=your-api-key-here&platform=kuaishou
      * </pre>
      *
      * @param request HTTP 请求
@@ -73,7 +74,7 @@ public class ExternalApiController {
             if (entry != null) {
                 result.put("success", true);
                 result.put("code", 200);
-                result.put("message", "成功获取抖音号");
+                result.put("message", "成功获取账号");
                 result.put("data", Map.of(
                         "displayId", entry.getDisplayId()
                 ));

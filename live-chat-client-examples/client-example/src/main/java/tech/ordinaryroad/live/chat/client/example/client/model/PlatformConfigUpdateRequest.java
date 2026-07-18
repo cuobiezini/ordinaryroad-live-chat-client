@@ -13,11 +13,6 @@ import lombok.Data;
 public class PlatformConfigUpdateRequest {
 
     /**
-     * 直播间ID
-     */
-    private String roomId;
-
-    /**
      * Cookie认证信息
      */
     private String cookie;

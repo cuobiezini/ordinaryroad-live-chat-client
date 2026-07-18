@@ -28,16 +28,25 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import tech.ordinaryroad.live.chat.client.bilibili.client.BilibiliLiveChatClient;
+import tech.ordinaryroad.live.chat.client.bilibili.config.BilibiliLiveChatClientConfig;
 import tech.ordinaryroad.live.chat.client.bilibili.listener.IBilibiliConnectionListener;
 import tech.ordinaryroad.live.chat.client.bilibili.listener.IBilibiliMsgListener;
+import tech.ordinaryroad.live.chat.client.codec.kuaishou.constant.RoomInfoGetTypeEnum;
 import tech.ordinaryroad.live.chat.client.douyin.client.DouyinLiveChatClient;
+import tech.ordinaryroad.live.chat.client.douyin.config.DouyinLiveChatClientConfig;
 import tech.ordinaryroad.live.chat.client.douyu.client.DouyuLiveChatClient;
+import tech.ordinaryroad.live.chat.client.douyu.config.DouyuLiveChatClientConfig;
 import tech.ordinaryroad.live.chat.client.douyu.listener.IDouyuConnectionListener;
 import tech.ordinaryroad.live.chat.client.douyu.listener.IDouyuMsgListener;
+import tech.ordinaryroad.live.chat.client.example.client.config.listener.DouyinConnectionListener;
+import tech.ordinaryroad.live.chat.client.example.client.config.listener.DouyinMsgListener;
 import tech.ordinaryroad.live.chat.client.example.client.service.ConfigPersistenceService;
+import tech.ordinaryroad.live.chat.client.example.client.service.UnifiedConfigService;
 import tech.ordinaryroad.live.chat.client.kuaishou.client.KuaishouLiveChatClient;
+import tech.ordinaryroad.live.chat.client.kuaishou.config.KuaishouLiveChatClientConfig;
 import tech.ordinaryroad.live.chat.client.kuaishou.listener.IKuaishouConnectionListener;
 import tech.ordinaryroad.live.chat.client.kuaishou.listener.IKuaishouMsgListener;
 
@@ -52,8 +61,6 @@ import tech.ordinaryroad.live.chat.client.kuaishou.listener.IKuaishouMsgListener
 @Component
 public class LiveChatClientConfiguration {
 
-    @Autowired
-    LiveChatClientConfigurations configurations;
     @Autowired
     IBilibiliMsgListener bilibiliSendSmsReplyMsgListener;
     @Autowired
@@ -72,6 +79,9 @@ public class LiveChatClientConfiguration {
     DouyinConnectionListener douyinConnectionListener;
     @Autowired
     ConfigPersistenceService configPersistenceService;
+    @Autowired
+    @Lazy
+    UnifiedConfigService unifiedConfigService;
 
     /**
      * 应用启动时初始化默认配置
@@ -85,22 +95,33 @@ public class LiveChatClientConfiguration {
 
     @Bean
     public BilibiliLiveChatClient bilibiliLiveChatClient() {
-        return new BilibiliLiveChatClient(configurations.getBilibili(), bilibiliSendSmsReplyMsgListener, bilibiliConnectionListener);
+        // 使用空配置创建客户端，运行时从数据库加载配置
+        BilibiliLiveChatClientConfig config = BilibiliLiveChatClientConfig.builder().build();
+        return new BilibiliLiveChatClient(config, bilibiliSendSmsReplyMsgListener, bilibiliConnectionListener);
     }
 
     @Bean
     public DouyuLiveChatClient douyuLiveChatClient() {
-        return new DouyuLiveChatClient(configurations.getDouyu(), douyuCmdMsgListener, douyuConnectionListener);
+        // 使用空配置创建客户端，运行时从数据库加载配置
+        DouyuLiveChatClientConfig config = DouyuLiveChatClientConfig.builder().build();
+        return new DouyuLiveChatClient(config, douyuCmdMsgListener, douyuConnectionListener);
     }
 
     @Bean
     public KuaishouLiveChatClient kuaishouLiveChatClient() {
-        return new KuaishouLiveChatClient(configurations.getKuaishou(), kuaishouMsgListener, kuaishouConnectionListener);
+        // 使用空配置创建客户端，运行时从数据库加载配置
+        // 默认使用 NOT_COOKIE 模式，避免 Cookie 相关问题
+        KuaishouLiveChatClientConfig config = KuaishouLiveChatClientConfig.builder()
+                .roomInfoGetType(RoomInfoGetTypeEnum.COOKIE)
+                .build();
+        return new KuaishouLiveChatClient(config, kuaishouMsgListener, kuaishouConnectionListener);
     }
 
     @Bean
     public DouyinLiveChatClient douyinLiveChatClient() {
-        return new DouyinLiveChatClient(configurations.getDouyin(), douyinMsgListener, douyinConnectionListener);
+        // 使用空配置创建客户端，运行时从数据库加载配置
+        DouyinLiveChatClientConfig config = DouyinLiveChatClientConfig.builder().build();
+        return new DouyinLiveChatClient(config, douyinMsgListener, douyinConnectionListener);
     }
 
 }

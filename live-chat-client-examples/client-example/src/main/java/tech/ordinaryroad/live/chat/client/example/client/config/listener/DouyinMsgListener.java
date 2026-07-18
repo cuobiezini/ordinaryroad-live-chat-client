@@ -1,4 +1,4 @@
-package tech.ordinaryroad.live.chat.client.example.client.config;
+package tech.ordinaryroad.live.chat.client.example.client.config.listener;
 
 import cn.hutool.extra.spring.SpringUtil;
 import lombok.extern.slf4j.Slf4j;

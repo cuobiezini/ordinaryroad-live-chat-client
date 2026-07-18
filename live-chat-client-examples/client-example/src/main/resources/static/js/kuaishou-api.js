@@ -81,9 +81,15 @@ const KuaishouAPI = {
     
     /**
      * 批量连接房间
+     * @param {Array} roomIds 房间ID列表
+     * @param {String} cookie Cookie（可选）
      */
-    async batchConnect(roomIds) {
-        const response = await safeFetch('/client/multiply/batch-connect?platform=kuaishou', {
+    async batchConnect(roomIds, cookie) {
+        let url = '/client/multiply/batch-connect?platform=kuaishou';
+        if (cookie) {
+            url += '&cookie=' + encodeURIComponent(cookie);
+        }
+        const response = await safeFetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(roomIds)

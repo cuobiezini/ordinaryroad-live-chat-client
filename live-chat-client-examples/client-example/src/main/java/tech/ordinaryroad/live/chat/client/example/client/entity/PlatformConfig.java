@@ -34,12 +34,6 @@ public class PlatformConfig {
     private String platform;
 
     /**
-     * 直播间ID
-     */
-    @Column(nullable = false, length = 100)
-    private String roomId;
-
-    /**
      * Cookie认证信息
      */
     @Column(columnDefinition = "TEXT")

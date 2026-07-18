@@ -17,7 +17,6 @@
         <div class="nav-bar">
             <div class="nav-links" id="nav-links">
                 <a href="/" class="nav-link active"> 总览</a>
-                <a href="/entry-history" class="nav-link"> 入场记录</a>
                 <!-- 平台导航链接将通过JavaScript动态生成 -->
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -74,7 +73,7 @@
         // 加载当前用户信息
         async function loadCurrentUser() {
             try {
-                const response = await fetch('/api/live-chat/user/current');
+                const response = await fetch('/api/user/current');
                 if (response.ok) {
                     const user = await response.json();
                     document.getElementById('user-info').textContent = ` ${user.username}`;
@@ -101,9 +100,8 @@
         // 生成导航栏链接
         function generateNavLinks() {
             const navContainer = document.getElementById('nav-links');
-            // 保留总览和入场记录链接
-            navContainer.innerHTML = '<a href="/" class="nav-link active"> 总览</a>' +
-                                     '<a href="/entry-history" class="nav-link"> 入场记录</a>';
+            // 保留总览链接
+            navContainer.innerHTML = '<a href="/" class="nav-link active"> 总览</a>';
             
             enabledPlatforms.forEach(platform => {
                 const link = document.createElement('a');
@@ -150,7 +148,7 @@
             const card = document.createElement('div');
             card.className = 'platform-card';
             card.onclick = () => window.location.href = `/${platform}`;
-            
+
             // 获取状态
             let isConnected = false;
             try {
@@ -160,26 +158,21 @@
             } catch (e) {
                 console.error(`获取${platform}状态失败:`, e);
             }
-            
-            const roomId = config ? config.roomId : '未配置';
+
             const autoReconnect = config ? (config.autoReconnect ? '是' : '否') : '-';
             const icon = displayConfig ? displayConfig.icon : '';
             const platformName = displayConfig ? displayConfig.platformName : platform;
-            
+
             card.innerHTML = `
                 <div class="platform-header">
                     <div class="platform-name">${icon} ${platformName}</div>
-                    <span class="status-badge ${isConnected ? 'status-connected' : 'status-disconnected'}" 
+                    <span class="status-badge ${isConnected ? 'status-connected' : 'status-disconnected'}"
                           id="status-${platform}">
                         ${isConnected ? '已连接' : '未连接'}
                     </span>
                 </div>
-                
+
                 <div class="platform-info">
-                    <div class="info-item">
-                        <span class="info-label">直播间ID:</span>
-                        <span class="info-value">${roomId}</span>
-                    </div>
                     <div class="info-item">
                         <span class="info-label">自动重连:</span>
                         <span class="info-value">${autoReconnect}</span>
@@ -189,12 +182,12 @@
                         <span class="info-value">${config && config.cookie ? '已配置' : '未配置'}</span>
                     </div>
                 </div>
-                
+
                 <button class="btn-view" onclick="event.stopPropagation(); window.location.href='/${platform}'">
                     查看详情 →
                 </button>
             `;
-            
+
             return card;
         }
 

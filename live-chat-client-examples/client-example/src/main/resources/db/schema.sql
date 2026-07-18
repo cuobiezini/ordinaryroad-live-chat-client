@@ -33,7 +33,6 @@ DROP TABLE IF EXISTS `platform_config`;
 CREATE TABLE `platform_config` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `platform` VARCHAR(50) NOT NULL COMMENT '平台标识：bilibili, douyu, kuaishou, douyin',
-    `room_id` VARCHAR(100) NOT NULL COMMENT '直播间ID',
     `cookie` TEXT COMMENT 'Cookie认证信息',
     `auto_reconnect` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否自动重连：0-否，1-是',
     `room_info_get_type` VARCHAR(50) COMMENT '房间信息获取方式（快手专用）：COOKIE, NOT_COOKIE',
@@ -47,12 +46,10 @@ CREATE TABLE `platform_config` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='直播平台配置表';
 
 -- 插入默认配置数据
-INSERT INTO `platform_config` (`platform`, `room_id`, `cookie`, `auto_reconnect`, `room_info_get_type`, `enabled`, `remark`) 
+INSERT INTO `platform_config` (`platform`, `cookie`, `auto_reconnect`, `room_info_get_type`, `enabled`, `remark`) 
 VALUES 
-    ('bilibili', '', '', 1, NULL, 1, 'B站直播间配置'),
-    ('douyu', '', '', 1, NULL, 1, '斗鱼直播间配置'),
-    ('kuaishou', '', '', 1, 'NOT_COOKIE', 1, '快手直播间配置'),
-    ('douyin', '', '', 1, NULL, 1, '抖音直播间配置')
+    ('kuaishou', '', 1, 'NOT_COOKIE', 1, '快手直播间配置'),
+    ('douyin', '', 1, NULL, 1, '抖音直播间配置')
 ON DUPLICATE KEY UPDATE 
     `updated_at` = CURRENT_TIMESTAMP;
 
@@ -183,12 +180,10 @@ CREATE TABLE `platform_display_config` (
     UNIQUE KEY `uk_platform` (`platform`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='平台展示配置表';
 
--- 插入默认数据（默认只启用抖音平台）
+-- 插入默认数据（默认只启用抖音和快手平台）
 INSERT INTO `platform_display_config` (`platform`, `platform_name`, `enabled`, `display_order`, `icon`, `remark`) VALUES
 ('douyin', '抖音', 1, 1, '⚫', '默认启用的平台'),
-('bilibili', 'B站', 0, 2, '🟣', '哔哩哔哩直播平台'),
-('douyu', '斗鱼', 0, 3, '🔴', '斗鱼直播平台'),
-('kuaishou', '快手', 0, 4, '🟠', '快手直播平台');
+('kuaishou', '快手', 0, 2, '🟠', '快手直播平台');
 
 -- ----------------------------
 -- 8. API Key 配置表 (外部接口调用认证)

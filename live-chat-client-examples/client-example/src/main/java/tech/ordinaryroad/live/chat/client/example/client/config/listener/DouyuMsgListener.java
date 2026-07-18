@@ -22,33 +22,37 @@
  * SOFTWARE.
  */
 
-package tech.ordinaryroad.live.chat.client.example.client.config;
+package tech.ordinaryroad.live.chat.client.example.client.config.listener;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import tech.ordinaryroad.live.chat.client.douyu.listener.IDouyuConnectionListener;
-import tech.ordinaryroad.live.chat.client.douyu.netty.handler.DouyuConnectionHandler;
+import tech.ordinaryroad.live.chat.client.codec.douyu.msg.ChatmsgMsg;
+import tech.ordinaryroad.live.chat.client.codec.douyu.msg.DgbMsg;
+import tech.ordinaryroad.live.chat.client.douyu.listener.IDouyuMsgListener;
+import tech.ordinaryroad.live.chat.client.douyu.netty.handler.DouyuBinaryFrameHandler;
 
 /**
  * @author mjz
- * @date 2023/8/21
+ * @date 2023/9/3
  */
 @Slf4j
+@Primary
 @Service
-public class DouyuConnectionListener implements IDouyuConnectionListener {
+public class DouyuMsgListener implements IDouyuMsgListener {
 
     @Override
-    public void onConnected(DouyuConnectionHandler connectionHandler) {
-        log.info("douyu {} onConnected", connectionHandler.getRoomId());
+    public void onDanmuMsg(DouyuBinaryFrameHandler binaryFrameHandler, ChatmsgMsg msg) {
+        IDouyuMsgListener.super.onDanmuMsg(binaryFrameHandler, msg);
+
+        log.info("{} 收到弹幕 {}({})：{}", binaryFrameHandler.getRoomId(), msg.getUsername(), msg.getUid(), msg.getContent());
     }
 
     @Override
-    public void onConnectFailed(DouyuConnectionHandler connectionHandler) {
-        log.info("douyu {} onConnectFailed", connectionHandler.getRoomId());
+    public void onGiftMsg(DouyuBinaryFrameHandler binaryFrameHandler, DgbMsg msg) {
+        IDouyuMsgListener.super.onGiftMsg(binaryFrameHandler, msg);
+
+        log.info("{} 收到礼物 {}({}) {} {}({})x{}({})", binaryFrameHandler.getRoomId(), msg.getUsername(), msg.getUid(), "赠送", msg.getGiftName(), msg.getGiftId(), msg.getGiftCount(), msg.getGiftPrice());
     }
 
-    @Override
-    public void onDisconnected(DouyuConnectionHandler connectionHandler) {
-        log.info("douyu {} onDisconnected", connectionHandler.getRoomId());
-    }
 }

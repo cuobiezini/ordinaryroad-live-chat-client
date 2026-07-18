@@ -160,6 +160,16 @@ public interface LiveEntryHistoryRepository extends JpaRepository<LiveEntryHisto
     List<LiveEntryHistory> findByDisplayIdAndIsUsedFalse(String displayId);
 
     /**
+     * 检查是否存在相同平台、直播间和displayId的记录
+     *
+     * @param platform  平台标识
+     * @param roomId    直播间ID
+     * @param displayId 展示ID（如快手号）
+     * @return 是否存在
+     */
+    boolean existsByPlatformAndRoomIdAndDisplayId(String platform, String roomId, String displayId);
+
+    /**
      * 批量删除所有记录（JPQL方式，避免乐观锁冲突）
      *
      * @return 删除的记录数

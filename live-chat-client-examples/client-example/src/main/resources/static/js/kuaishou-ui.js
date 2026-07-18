@@ -190,7 +190,9 @@ const KuaishouUI = {
         this.showBatchConnectLoading();
         
         try {
-            const result = await KuaishouAPI.batchConnect(roomIds);
+            // 获取配置中的cookie
+            const cookie = document.getElementById('cookie-kuaishou')?.value || '';
+            const result = await KuaishouAPI.batchConnect(roomIds, cookie);
             
             showToast(result.message, 'success');
             addLog(result.message, 'success');

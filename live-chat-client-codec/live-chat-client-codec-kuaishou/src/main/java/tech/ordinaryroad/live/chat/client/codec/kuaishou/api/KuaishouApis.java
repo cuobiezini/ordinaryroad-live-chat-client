@@ -428,7 +428,7 @@ public class KuaishouApis {
     }
 
     private static JsonNode responseInterceptor(String responseString) {
-        log.info("responseString: {}", responseString);
+        log.debug("responseString: {}", responseString);
         try {
             JsonNode jsonNode = OrJacksonUtil.getInstance().readTree(responseString);
             JsonNode data = jsonNode.required("data");

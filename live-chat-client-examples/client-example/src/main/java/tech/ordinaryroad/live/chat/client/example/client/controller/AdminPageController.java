@@ -28,28 +28,6 @@ public class AdminPageController {
     }
 
     /**
-     * B站配置页面
-     *
-     * @return B站配置页面模板
-     */
-    @GetMapping("/bilibili")
-    public String bilibiliPage() {
-        log.info("访问B站配置页面");
-        return "bilibili";
-    }
-
-    /**
-     * 斗鱼配置页面
-     *
-     * @return 斗鱼配置页面模板
-     */
-    @GetMapping("/douyu")
-    public String douyuPage() {
-        log.info("访问斗鱼配置页面");
-        return "douyu";
-    }
-
-    /**
      * 快手配置页面
      *
      * @return 快手配置页面模板
@@ -71,14 +49,4 @@ public class AdminPageController {
         return "douyin";
     }
 
-    /**
-     * 入场记录管理页面
-     *
-     * @return 入场记录管理页面模板
-     */
-    @GetMapping("/entry-history")
-    public String entryHistoryPage() {
-        log.info("访问入场记录管理页面");
-        return "entry-history";
-    }
 }

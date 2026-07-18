@@ -89,18 +89,16 @@ public class UnifiedConfigService {
      * 更新平台配置
      *
      * @param platform        平台标识
-     * @param roomId          直播间ID（可选）
      * @param cookie          Cookie（可选）
      * @param autoReconnect   自动重连（可选）
      * @param roomInfoGetType 房间信息获取方式（可选，快手专用）
      * @return 更新后的配置
      */
-    public PlatformConfig updateConfig(String platform, String roomId, String cookie,
+    public PlatformConfig updateConfig(String platform, String cookie,
                                        Boolean autoReconnect, String roomInfoGetType) {
         PlatformConfig config = getConfig(platform);
 
         // 更新字段
-        if (roomId != null) config.setRoomId(roomId);
         if (cookie != null) config.setCookie(cookie);
         if (autoReconnect != null) config.setAutoReconnect(autoReconnect);
         if (roomInfoGetType != null) config.setRoomInfoGetType(roomInfoGetType);
@@ -111,7 +109,7 @@ public class UnifiedConfigService {
         // 同步更新运行中的客户端配置
         syncConfigToClient(platform, savedConfig);
 
-        log.info("配置更新成功: platform={}, roomId={}", platform, savedConfig.getRoomId());
+        log.info("配置更新成功: platform={}", platform);
         return savedConfig;
     }
 
@@ -125,7 +123,6 @@ public class UnifiedConfigService {
         return configs.stream()
                 .map(config -> updateConfig(
                         config.getPlatform(),
-                        config.getRoomId(),
                         config.getCookie(),
                         config.getAutoReconnect(),
                         config.getRoomInfoGetType()
@@ -244,7 +241,6 @@ public class UnifiedConfigService {
         try {
             // 更新基础配置
             BaseLiveChatClientConfig clientConfig = client.getConfig();
-            clientConfig.setRoomId(config.getRoomId());
             if (StringUtils.isNotBlank(config.getCookie())) {
                 clientConfig.setCookie(config.getCookie());
             }
@@ -289,8 +285,7 @@ public class UnifiedConfigService {
             if (config.getEnabled()) {
                 try {
                     syncConfigToClient(config.getPlatform(), config);
-                    log.info("客户端初始化完成: platform={}, roomId={}",
-                            config.getPlatform(), config.getRoomId());
+                    log.info("客户端初始化完成: platform={}", config.getPlatform());
                 } catch (Exception e) {
                     log.error("客户端初始化失败: platform={}", config.getPlatform(), e);
                 }

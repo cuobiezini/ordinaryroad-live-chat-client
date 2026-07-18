@@ -1,23 +1,19 @@
-package tech.ordinaryroad.live.chat.client.example.client.config;
+package tech.ordinaryroad.live.chat.client.example.client.config.listener;
 
 import cn.hutool.extra.spring.SpringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tech.ordinaryroad.live.chat.client.codec.kuaishou.msg.KuaishouDanmuMsg;
-import tech.ordinaryroad.live.chat.client.codec.kuaishou.msg.KuaishouGiftMsg;
-import tech.ordinaryroad.live.chat.client.codec.kuaishou.msg.KuaishouRoomStatsMsg;
+import tech.ordinaryroad.live.chat.client.codec.kuaishou.msg.*;
+import tech.ordinaryroad.live.chat.client.codec.kuaishou.room.KuaishouRoomInitResult;
 import tech.ordinaryroad.live.chat.client.commons.base.constant.RoomLiveStatusEnum;
 import tech.ordinaryroad.live.chat.client.commons.base.msg.IMsg;
+import tech.ordinaryroad.live.chat.client.commons.client.BaseLiveChatClient;
+import tech.ordinaryroad.live.chat.client.example.client.entity.*;
+import tech.ordinaryroad.live.chat.client.example.client.repository.*;
 import tech.ordinaryroad.live.chat.client.kuaishou.client.KuaishouLiveChatClient;
 import tech.ordinaryroad.live.chat.client.kuaishou.listener.IKuaishouMsgListener;
 import tech.ordinaryroad.live.chat.client.kuaishou.netty.handler.KuaishouBinaryFrameHandler;
-import tech.ordinaryroad.live.chat.client.example.client.entity.LiveDanmuHistory;
-import tech.ordinaryroad.live.chat.client.example.client.entity.LiveGiftHistory;
-import tech.ordinaryroad.live.chat.client.example.client.entity.LiveRoomStatsHistory;
-import tech.ordinaryroad.live.chat.client.example.client.repository.LiveDanmuHistoryRepository;
-import tech.ordinaryroad.live.chat.client.example.client.repository.LiveGiftHistoryRepository;
-import tech.ordinaryroad.live.chat.client.example.client.repository.LiveRoomStatsHistoryRepository;
 
 /**
  * 快手直播消息监听器实现类
@@ -37,14 +33,22 @@ public class KuaishouMsgListener implements IKuaishouMsgListener {
     private LiveRoomStatsHistoryRepository liveRoomStatsHistoryRepository;
     @Autowired
     private LiveGiftHistoryRepository liveGiftHistoryRepository;
+    @Autowired
+    private LiveEntryHistoryRepository liveEntryHistoryRepository;
 
     /**
      * 从 Spring 容器中获取快手直播客户端实例
+     * 如果不存在则返回 null（适用于动态创建的客户端场景）
      *
-     * @return KuaishouLiveChatClient
+     * @return KuaishouLiveChatClient 或 null
      */
     private KuaishouLiveChatClient getKuaishouLiveChatClient() {
-        return SpringUtil.getBean(KuaishouLiveChatClient.class);
+        try {
+            return SpringUtil.getBean(KuaishouLiveChatClient.class);
+        } catch (Exception e) {
+            log.debug("Spring容器中不存在KuaishouLiveChatClient bean（可能是动态创建的客户端）");
+            return null;
+        }
     }
 
     /**
@@ -59,12 +63,11 @@ public class KuaishouMsgListener implements IKuaishouMsgListener {
         String content = msg.getContent();
         String uid = msg.getUid();
         Object roomId = binaryFrameHandler.getRoomId();
-        log.info("{} 收到弹幕 {} {}({})：{}", roomId, msg.getBadgeLevel() != 0 ? msg.getBadgeLevel() + msg.getBadgeName() : "", msg.getUsername(), uid, content);
+        log.debug("{} 收到弹幕 {} {}({})：{}", roomId, msg.getBadgeLevel() != 0 ? msg.getBadgeLevel() + msg.getBadgeName() : "", msg.getUsername(), uid, content);
 
         tech.ordinaryroad.live.chat.client.codec.kuaishou.protobuf.SimpleUserInfoOuterClass.SimpleUserInfo user = msg.getMsg().getUser();
         String displayId = user.getPrincipalId();
         log.info("{}:到弹幕消息 用户：{} 快手号：{},内容:{}", roomId, msg.getUsername(), displayId, content);
-
         // 保存弹幕消息到数据库
         LiveDanmuHistory danmuHistory = new LiveDanmuHistory();
         danmuHistory.setPlatform("kuaishou");
@@ -75,15 +78,40 @@ public class KuaishouMsgListener implements IKuaishouMsgListener {
         danmuHistory.setBadgeName(msg.getBadgeName());
         danmuHistory.setBadgeLevel((int) msg.getBadgeLevel()); // 显式转换为int
         danmuHistory.setContent(content);
-     //   liveDanmuHistoryRepository.save(danmuHistory);
 
+
+
+        // 保存用户入场消息到数据库（基于displayId做幂等）
+        String roomIdStr = String.valueOf(roomId);
+        boolean exists = liveEntryHistoryRepository.existsByPlatformAndRoomIdAndDisplayId("kuaishou", roomIdStr, displayId);
+        if (!exists) {
+            LiveEntryHistory entryHistory = new LiveEntryHistory();
+            entryHistory.setPlatform("kuaishou");
+            entryHistory.setRoomId(roomIdStr);
+            entryHistory.setUid(uid);
+            entryHistory.setUsername(msg.getUsername());
+            entryHistory.setDisplayId(displayId);
+            liveEntryHistoryRepository.save(entryHistory);
+        }
+
+
+     //   liveDanmuHistoryRepository.save(danmuHistory);
         // TODO 可以用大模型进行FAQ回复
         // String answer = content + "  的回复";
         // kuaishouLiveChatClient.sendDanmu(answer);
-
         // 获取当前直播间的实时存活状态
-        RoomLiveStatusEnum roomLiveStatus = getKuaishouLiveChatClient().getRoomInitResult().getRoomLiveStatus();
-        log.debug("直播间状态 {}", roomLiveStatus);
+        KuaishouLiveChatClient client = getKuaishouLiveChatClient();
+        if (client != null) {
+            KuaishouRoomInitResult roomInitResult = client.getRoomInitResult();
+            if (roomInitResult != null) {
+                RoomLiveStatusEnum roomLiveStatus = roomInitResult.getRoomLiveStatus();
+                log.debug("直播间状态 {}", roomLiveStatus);
+            } else {
+                log.debug("直播间初始化结果为空");
+            }
+        } else {
+            log.debug("KuaishouLiveChatClient 客户端实例不存在（可能是动态创建的客户端）");
+        }
     }
 
     /**
@@ -131,8 +159,7 @@ public class KuaishouMsgListener implements IKuaishouMsgListener {
     public void onRoomStatsMsg(KuaishouBinaryFrameHandler binaryFrameHandler, KuaishouRoomStatsMsg msg) {
         IKuaishouMsgListener.super.onRoomStatsMsg(binaryFrameHandler, msg);
         Object roomId = binaryFrameHandler.getRoomId();
-        log.info("{} 统计信息 累计点赞数: {}, 当前观看人数: {}, 累计观看人数: {}", roomId, msg.getLikedCount(), msg.getWatchingCount(), msg.getWatchedCount());
-
+        log.debug("{} 统计信息 累计点赞数: {}, 当前观看人数: {}, 累计观看人数: {}", roomId, msg.getLikedCount(), msg.getWatchingCount(), msg.getWatchedCount());
         // 保存房间统计消息到数据库
         LiveRoomStatsHistory statsHistory = new LiveRoomStatsHistory();
         statsHistory.setPlatform("kuaishou");
@@ -140,7 +167,7 @@ public class KuaishouMsgListener implements IKuaishouMsgListener {
         statsHistory.setLikedCount(msg.getLikedCount() != null ? Long.parseLong(msg.getLikedCount()) : 0L);
         statsHistory.setWatchingCount(msg.getWatchingCount() != null ? Integer.parseInt(msg.getWatchingCount()) : 0);
         statsHistory.setWatchedCount(msg.getWatchedCount() != null ? Long.parseLong(msg.getWatchedCount()) : 0L);
-        //   liveRoomStatsHistoryRepository.save(statsHistory);
+//        liveRoomStatsHistoryRepository.save(statsHistory);
     }
 
     /**
@@ -150,8 +177,8 @@ public class KuaishouMsgListener implements IKuaishouMsgListener {
      */
     @Override
     public void onMsg(IMsg msg) {
-        // KuaishouCmdMsg cmdMsg = (KuaishouCmdMsg) msg;
-        // log.info("收到{}消息 {}", msg.getClass(), msg);
+         KuaishouCmdMsg cmdMsg = (KuaishouCmdMsg) msg;
+         log.debug("收到{}消息 {}", msg.getClass(), msg);
     }
 
     /**

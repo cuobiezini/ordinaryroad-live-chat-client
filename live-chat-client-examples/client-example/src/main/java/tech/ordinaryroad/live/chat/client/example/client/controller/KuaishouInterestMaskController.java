@@ -7,8 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import tech.ordinaryroad.live.chat.client.codec.kuaishou.api.KuaishouApis;
 import tech.ordinaryroad.live.chat.client.codec.kuaishou.resp.InterestMaskListResponse;
 import tech.ordinaryroad.live.chat.client.codec.kuaishou.resp.KuaishouUserInfoResponse;
-import tech.ordinaryroad.live.chat.client.example.client.config.LiveChatClientConfigurations;
-
+import tech.ordinaryroad.live.chat.client.kuaishou.client.KuaishouLiveChatClient;
 import tech.ordinaryroad.live.chat.client.kuaishou.config.KuaishouLiveChatClientConfig;
 
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.List;
 public class KuaishouInterestMaskController {
 
     @Autowired
-    LiveChatClientConfigurations configurations;
+    KuaishouLiveChatClient kuaishouLiveChatClient;
 
     /**
      * 获取兴趣掩码列表
@@ -31,9 +30,9 @@ public class KuaishouInterestMaskController {
      */
     @GetMapping("interestMaskList")
     public List<InterestMaskListResponse> getInterestMaskList() {
-        KuaishouLiveChatClientConfig kuaishou = configurations.getKuaishou();
-        String kww = kuaishou.getKww();
-        String cookie = kuaishou.getCookie();
+        KuaishouLiveChatClientConfig config = kuaishouLiveChatClient.getConfig();
+        String kww = config.getKww();
+        String cookie = config.getCookie();
         return KuaishouApis.interestMaskListResponse(cookie, kww);
     }
 
@@ -44,9 +43,9 @@ public class KuaishouInterestMaskController {
      */
     @GetMapping("userinfo")
     public KuaishouUserInfoResponse getUserInfo() {
-        KuaishouLiveChatClientConfig kuaishou = configurations.getKuaishou();
-        String kww = kuaishou.getKww();
-        String cookie = kuaishou.getCookie();
+        KuaishouLiveChatClientConfig config = kuaishouLiveChatClient.getConfig();
+        String kww = config.getKww();
+        String cookie = config.getCookie();
         return KuaishouApis.userInfo(cookie, kww);
     }
 

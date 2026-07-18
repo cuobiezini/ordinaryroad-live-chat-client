@@ -73,16 +73,14 @@ function updateStatusBadge(platform, connected) {
 
 // 保存配置
 async function saveConfig(platform) {
-    const roomId = document.getElementById(`roomId-${platform}`).value;
     const cookie = document.getElementById(`cookie-${platform}`).value;
     const autoReconnect = document.getElementById(`autoReconnect-${platform}`).checked;
-    
+
     const data = {
-        roomId: roomId,
         cookie: cookie,
         autoReconnect: autoReconnect
     };
-    
+
     try {
         addLog(`正在保存${getPlatformName(platform)}配置...`, 'info');
         const response = await fetch(`/api/live-chat/config/updateConfig/${platform}`, {
@@ -90,7 +88,7 @@ async function saveConfig(platform) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        
+
         if (response.ok) {
             showToast(`${getPlatformName(platform)}配置保存成功`, 'success');
             addLog(`${getPlatformName(platform)}配置保存成功`, 'success');
@@ -191,19 +189,17 @@ async function loadPlatformConfig(platform) {
     try {
         const response = await fetch(`/api/live-chat/config/${platform}`);
         const config = await response.json();
-        
+
         // 填充表单
-        const roomIdInput = document.getElementById(`roomId-${platform}`);
         const cookieInput = document.getElementById(`cookie-${platform}`);
         const autoReconnectInput = document.getElementById(`autoReconnect-${platform}`);
-        
-        if (roomIdInput && config.roomId) roomIdInput.value = config.roomId;
+
         if (cookieInput && config.cookie) cookieInput.value = config.cookie;
         if (autoReconnectInput) autoReconnectInput.checked = config.autoReconnect !== false;
-        
+
         // 更新状态
         await updateClientStatus(platform);
-        
+
     } catch (error) {
         addLog(`加载配置失败: ${error.message}`, 'error');
     }
