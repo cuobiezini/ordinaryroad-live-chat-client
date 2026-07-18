@@ -457,6 +457,7 @@ const DouyinUI = {
                     <td style="padding: 12px;">${entry.roomId || '-'}</td>
                     <td style="padding: 12px;">${entry.username || '-'}</td>
                     <td style="padding: 12px;">${entry.displayId || '-'}</td>
+                    <td style="padding: 12px;">${entry.uid || '-'}</td>
                     <td style="padding: 12px;">${usedBadge}</td>
                     <td style="padding: 12px;">${enterTime}</td>
                     <td style="padding: 12px; text-align: center;">
