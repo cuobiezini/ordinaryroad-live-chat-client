@@ -76,7 +76,8 @@ public class ExternalApiController {
                 result.put("code", 200);
                 result.put("message", "成功获取账号");
                 result.put("data", Map.of(
-                        "displayId", entry.getDisplayId()
+                        "displayId", entry.getDisplayId(),
+                        "uid", entry.getUid()
                 ));
 
                 log.info("外部 API 调用成功: apiKey={}, displayId={}, uid={}", 
