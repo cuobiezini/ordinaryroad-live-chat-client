@@ -22,37 +22,33 @@
  * SOFTWARE.
  */
 
-package tech.ordinaryroad.live.chat.client.example.client.config;
+package tech.ordinaryroad.live.chat.client.example.client.config.listener;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import tech.ordinaryroad.live.chat.client.codec.douyu.msg.ChatmsgMsg;
-import tech.ordinaryroad.live.chat.client.codec.douyu.msg.DgbMsg;
-import tech.ordinaryroad.live.chat.client.douyu.listener.IDouyuMsgListener;
-import tech.ordinaryroad.live.chat.client.douyu.netty.handler.DouyuBinaryFrameHandler;
+import tech.ordinaryroad.live.chat.client.kuaishou.listener.IKuaishouConnectionListener;
+import tech.ordinaryroad.live.chat.client.kuaishou.netty.handler.KuaishouConnectionHandler;
 
 /**
  * @author mjz
- * @date 2023/9/3
+ * @date 2023/8/21
  */
 @Slf4j
-@Primary
 @Service
-public class DouyuMsgListener implements IDouyuMsgListener {
+public class KuaishouConnListener implements IKuaishouConnectionListener {
 
     @Override
-    public void onDanmuMsg(DouyuBinaryFrameHandler binaryFrameHandler, ChatmsgMsg msg) {
-        IDouyuMsgListener.super.onDanmuMsg(binaryFrameHandler, msg);
-
-        log.info("{} 收到弹幕 {}({})：{}", binaryFrameHandler.getRoomId(), msg.getUsername(), msg.getUid(), msg.getContent());
+    public void onConnected(KuaishouConnectionHandler connectionHandler) {
+        log.info("kuaishou {} onConnected", connectionHandler.getRoomId());
     }
 
     @Override
-    public void onGiftMsg(DouyuBinaryFrameHandler binaryFrameHandler, DgbMsg msg) {
-        IDouyuMsgListener.super.onGiftMsg(binaryFrameHandler, msg);
-
-        log.info("{} 收到礼物 {}({}) {} {}({})x{}({})", binaryFrameHandler.getRoomId(), msg.getUsername(), msg.getUid(), "赠送", msg.getGiftName(), msg.getGiftId(), msg.getGiftCount(), msg.getGiftPrice());
+    public void onConnectFailed(KuaishouConnectionHandler connectionHandler) {
+        log.info("kuaishou {} onConnectFailed", connectionHandler.getRoomId());
     }
 
+    @Override
+    public void onDisconnected(KuaishouConnectionHandler connectionHandler) {
+        log.info("kuaishou {} onDisconnected", connectionHandler.getRoomId());
+    }
 }

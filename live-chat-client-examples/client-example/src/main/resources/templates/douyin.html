@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抖音配置 - 直播弹幕客户端管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/entry-table.css}">
+    <link rel="stylesheet" th:href="@{/css/entry-table.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚫ 抖音直播间配置</h1>
+            <p>Douyin Live Chat Client Configuration</p>
+        </div>
+
+        <!-- 导航栏 -->
+        <div class="nav-bar">
+            <div class="nav-links">
+                <a href="/" class="nav-link">📊 总览</a>
+                <a href="/kuaishou" class="nav-link">🟠 快手</a>
+                <a href="/douyin" class="nav-link active">⚫ 抖音</a>
+            </div>
+        </div>
+
+        <!-- 平台配置卡片 -->
+        <div class="dashboard">
+            <div class="platform-card" style="cursor: default;">
+                <div class="platform-header">
+                    <div class="platform-name">⚫ 抖音 (Douyin)</div>
+                    <span class="status-badge status-disconnected" id="status-douyin">未连接</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="roomId-douyin">直播间ID</label>
+                    <input type="text" id="roomId-douyin" placeholder="输入抖音直播间ID，例如: 732385677810">
+                </div>
+                
+                <div class="form-group">
+                    <label for="cookie-douyin">Cookie（可选）</label>
+                    <input type="password" id="cookie-douyin" placeholder="输入浏览器Cookie，用于身份验证">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="autoReconnect-douyin" checked>
+                        自动重连
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="saveConfig('douyin')" id="btn-save-douyin">
+                        💾 保存配置
+                    </button>
+                    <button class="btn btn-primary" onclick="connectClient('douyin')" id="btn-connect-douyin">
+                         连接
+                    </button>
+                    <button class="btn btn-danger" onclick="disconnectClient('douyin')" id="btn-disconnect-douyin" disabled>
+                         断开
+                    </button>
+                    <button class="btn btn-warning" onclick="reconnectClient('douyin')" id="btn-reconnect-douyin">
+                        🔄 重连
+                    </button>
+                </div>
+            </div>
+
+            <!-- 批量连接房间 -->
+            <div class="platform-card" style="margin-top: 20px;">
+                <div class="platform-header">
+                    <div class="platform-name">🔗 批量连接房间</div>
+                    <span style="color: #999; font-size: 0.85em;">支持同时连接多个直播间</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="batch-roomIds-douyin">房间ID列表（每行一个）</label>
+                    <textarea id="batch-roomIds-douyin" rows="6" placeholder="请输入房间ID，每行一个，例如：&#10;732385677810&#10;732385677811&#10;732385677812" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; resize: vertical; transition: border-color 0.3s; font-family: 'Courier New', monospace;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'"></textarea>
+                    <small style="color: #999; display: block; margin-top: 5px;">💡 提示：直接粘贴房间ID列表</small>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="batchConnectRooms('douyin')">
+                        🚀 批量连接
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadBatchStatus('douyin')">
+                         刷新状态
+                    </button>
+                    <button class="btn btn-danger" onclick="disconnectAllRooms('douyin')">
+                         全部断开
+                    </button>
+                </div>
+            </div>
+
+            <!-- 批量连接状态展示 -->
+            <div class="platform-card" style="margin-top: 20px;">
+                <div class="platform-header">
+                    <div class="platform-name">📊 批量连接状态</div>
+                    <span id="batch-status-count" style="color: #999; font-size: 0.85em;">共 0 个房间</span>
+                </div>
+                
+                <div id="batch-status-container" style="max-height: 400px; overflow-y: auto;">
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        <p>暂无批量连接的房间</p>
+                        <p style="font-size: 0.85em; margin-top: 10px;">点击“批量连接”按钮开始连接房间</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 入场记录查询 -->
+        <div class="log-section">
+            <h2>📥 入场记录查询</h2>
+                    
+            <!-- 筛选条件 -->
+            <div class="entry-filter-section">
+                <h3>🔍 查询条件</h3>
+                <div class="entry-filter-grid">
+                    <div class="form-group">
+                        <label class="entry-label">直播间ID</label>
+                        <input type="text" id="entry-filter-roomId-douyin" placeholder="输入直播间ID" class="entry-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="entry-label">开始时间</label>
+                        <input type="datetime-local" id="entry-filter-startTime-douyin" class="entry-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="entry-label">结束时间</label>
+                        <input type="datetime-local" id="entry-filter-endTime-douyin" class="entry-input">
+                    </div>
+                    <div class="button-group">
+                        <button onclick="searchEntryRecords()" class="btn btn-primary">🔍 查询</button>
+                        <button onclick="resetEntryFilters()" class="btn btn-warning">🔄 重置</button>
+                    </div>
+                </div>
+            </div>
+                    
+            <!-- 数据表格 -->
+            <div class="entry-table-container">
+                <div class="entry-table-header">
+                    <h3>📋 入场记录列表</h3>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <div class="entry-stats-badge">
+                            <span class="label">总记录数</span>
+                            <span id="entry-total-count-douyin" class="count">0</span>
+                        </div>
+                        <div class="entry-actions">
+                            <button class="btn-entry-fetch" onclick="fetchDisplayId()"> 取数（抖音）</button>
+                            <button class="btn-entry-batch-mark" onclick="batchMarkAsUsed()">✓ 批量标记为已使用</button>
+                            <button class="btn-entry-batch-delete" onclick="batchDeleteEntries()">️ 批量删除</button>
+                            <button class="btn-entry-clean" onclick="showCleanDialog()" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 4px rgba(255,193,7,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                🧹 清理旧数据
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                                    
+                <table class="entry-table">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-col"><input type="checkbox" id="selectAllEntries-douyin" onchange="toggleSelectAllEntries()"></th>
+                            <th>ID</th>
+                            <th>平台</th>
+                            <th>直播间ID</th>
+                            <th>用户昵称</th>
+                            <th>抖音号</th>
+                            <th>UID</th>
+                            <th>是否已使用</th>
+                            <th>进入时间</th>
+                            <th style="text-align: center;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="entry-table-body-douyin">
+                        <tr>
+                            <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
+                                点击“查询”按钮加载入场记录
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                                    
+                <!-- 分页 -->
+                <div id="entry-pagination-douyin" class="entry-pagination">
+                    <span id="entry-page-info-douyin" class="entry-page-info">共 0 条记录，第 1 / 1 页</span>
+                    <button onclick="changeEntryPage('first')" id="entry-first-btn-douyin" disabled>首页</button>
+                    <button onclick="changeEntryPage('prev')" id="entry-prev-btn-douyin" disabled>上一页</button>
+                    <button onclick="changeEntryPage('next')" id="entry-next-btn-douyin" disabled>下一页</button>
+                    <button onclick="changeEntryPage('last')" id="entry-last-btn-douyin" disabled>末页</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作日志 -->
+        <div class="log-section">
+            <h2>📋 操作日志</h2>
+            <div class="log-container" id="log-container">
+                <div class="log-entry log-info">系统已就绪，等待操作...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用确认对话框 -->
+    <div id="confirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(4px);" onclick="if(event.target === this) closeConfirmModal()">
+        <div style="background: white; border-radius: 16px; padding: 0; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalSlideIn 0.3s ease-out; overflow: hidden;">
+            <!-- 头部 -->
+            <div id="confirmModalHeader" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px 25px; color: white;">
+                <h3 id="confirmModalTitle" style="margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+                    确认操作
+                </h3>
+            </div>
+            
+            <!-- 内容区 -->
+            <div style="padding: 25px 30px;">
+                <div id="confirmModalWarning" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 15px; margin-bottom: 20px; border-radius: 4px; display: none;">
+                    <p id="confirmModalWarningText" style="margin: 0; font-size: 14px; color: #856404; line-height: 1.5;">
+                    </p>
+                </div>
+                
+                <p id="confirmModalMessage" style="margin: 0; font-size: 15px; color: #333; line-height: 1.6;">
+                </p>
+                
+                <div id="confirmModalExtra" style="margin-top: 15px; display: none;">
+                </div>
+            </div>
+            
+            <!-- 底部按钮 -->
+            <div style="padding: 18px 25px; background: #f8f9fa; display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="closeConfirmModal()" class="btn btn-secondary" style="flex: 1; max-width: 100px;">
+                    取消
+                </button>
+                <button id="confirmModalBtn" class="btn btn-primary" style="flex: 1; max-width: 100px;">
+                    确定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 动画样式 -->
+    <style>
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+
+    <script th:src="@{/js/admin.js}"></script>
+    <script th:src="@{/js/douyin-manager.js}"></script>
+    <script th:src="@{/js/douyin-api.js}"></script>
+    <script th:src="@{/js/douyin-ui.js}"></script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+/* ============================================
+ * 入场记录表格样式
+ * 用于所有平台的入场记录查询页面
+ * ============================================ */
+
+/* 筛选条件区域 */
+.entry-filter-section {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    margin-bottom: 20px;
+}
+
+.entry-filter-section h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.entry-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    align-items: end;
+}
+
+.entry-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.entry-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    outline: none;
+}
+
+.entry-label {
+    font-size: 13px;
+    color: #666;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* 按钮样式 */
+.btn-entry-search {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-entry-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+}
+
+.btn-entry-fetch {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.btn-entry-fetch:hover {
+    transform: translateY(-1px);
+}
+
+.btn-entry-batch-mark {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.btn-entry-batch-mark:hover {
+    transform: translateY(-1px);
+}
+
+.btn-entry-batch-delete {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.btn-entry-batch-delete:hover {
+    transform: translateY(-1px);
+}
+
+/* 表格容器 */
+.entry-table-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.entry-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.entry-table-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+/* 统计徽章 */
+.entry-stats-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.entry-stats-badge .count {
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* 操作按钮组 */
+.entry-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* 表格样式 */
+.entry-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.entry-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.entry-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.entry-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 13px;
+}
+
+.entry-table tbody tr:hover {
+    background-color: #f8f9ff;
+}
+
+/* 状态标签 */
+.entry-status-used {
+    background: #d4edda;
+    color: #155724;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.entry-status-unused {
+    background: #fff3cd;
+    color: #856404;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* 操作按钮 */
+.entry-btn-mark {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-right: 5px;
+    transition: background 0.2s;
+}
+
+.entry-btn-mark:hover {
+    background: #5568d3;
+}
+
+.entry-btn-delete {
+    background: #f5576c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+}
+
+.entry-btn-delete:hover {
+    background: #e04559;
+}
+
+/* 分页控件 */
+.entry-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.entry-pagination button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.entry-pagination button:hover:not(:disabled) {
+    background: #5568d3;
+}
+
+.entry-pagination button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.entry-pagination-info {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Loading 动画 */
+.loading {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
